@@ -1,0 +1,4 @@
+name = "jregseq"
+uuid = "b34a420d-223d-4b4e-9114-30d66f31796f"
+authors = ["tomroesch <troeschi@caltech.edu>"]
+version = "0.1.0"

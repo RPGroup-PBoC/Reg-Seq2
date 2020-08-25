@@ -1,3 +1,7 @@
+import Random.shuffle
+Random.shuffle(s::String) = isascii(s) ? s[randperm(end)] : join(shuffle!(collect(s)))
+
+
 """
     function select_region(df::DataFrames.DataFrame, a, b)
 
@@ -53,4 +57,44 @@ function transform_seq(seq)
         throw(ArgumentError("Sequence of unknown type."))
     end
     return seq
+end
+
+
+"""
+    scramble(sequence, windowsize::Int, overlap::Int)
+"""
+function scramble(sequence, windowsize::Int, overlap::Int)
+    l_sequence = length(sequence)
+    n_scrambles = (l_sequence - windowsize) / (windowsize - overlap)
+    
+    # Test if scrambles can created throughout whole site
+    if ~isinteger(n_scrambles)
+        throw(ArgumentError("Cannot make scrambles with windowsize $windowsize and overlap $overlap."))
+    end
+    scrambled_sequences = [sequence]
+    indices(i) = (windowsize-overlap)*(i-1)+1 : (windowsize-overlap)*(i-1) + windowsize
+    for i in 1:Int(n_scrambles)+1
+        temp_sequence = collect(sequence)
+        temp_sequence[indices(i)] = shuffle(temp_sequence[indices(i)])
+        push!(scrambled_sequences, string(temp_sequence...))
+    end
+    return scrambled_sequences
+end
+    
+
+function site_single_mutations(sequence, site_start::Int, site_end::Int)
+    scrambled_sequences = [sequence]
+    letters = ["A", "C", "G", "T"]
+    if site_end < site_start
+        throw(ArgumentError("The end of the site should be larger than the start."))
+    end
+    for i in site_start:site_end
+        mutations = filter(x-> x[1] != sequence[i], letters)
+        for x in mutations
+            temp_sequence = collect(sequence)
+            temp_sequence[i] = x[1]
+            push!(scrambled_sequences, string(temp_sequence...))
+        end
+    end
+    return scrambled_sequences
 end

@@ -1,0 +1,16 @@
+Metadata-Version: 2.1
+Name: wgregseq
+Version: 0.0.1
+Summary: This repository contains all active research materials for the Reg-Seq project.
+Home-page: https://github.com/tomroesch/Reg-Seq2
+Author: Tom Roeschinger, Scott Saunders, Manuel Razo-Meja
+Author-email: troeschi@caltech.edu
+License: UNKNOWN
+Description: ## `software_module`
+        
+        All of your custom made functions, processing routines, and analysis methods should be given here either as a formal software module or, at a minimum, a single file with enumerated functions that can be directly called. I have not provided an example here as it is highly dependent on the programming language used. 
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Description-Content-Type: text/markdown

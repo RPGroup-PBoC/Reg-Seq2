@@ -1,0 +1,9 @@
+README.md
+setup.py
+wgregseq/__init__.py
+wgregseq/seq_utils.py
+wgregseq/viz.py
+wgregseq.egg-info/PKG-INFO
+wgregseq.egg-info/SOURCES.txt
+wgregseq.egg-info/dependency_links.txt
+wgregseq.egg-info/top_level.txt

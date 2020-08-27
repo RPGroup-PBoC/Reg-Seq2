@@ -71,7 +71,7 @@ def create_scrambles(sequence, windowsize, overlap, attempts, preserve_content=T
         raise ValueError("Overlap cannot be equal to or bigger than windowsize.")
         
     l_sequence = len(sequence)
-    n_scrambles = (l_sequence - windowsize) / (windowsize - overlap)
+    n_scrambles = (l_sequence - windowsize) / (windowsize - overlap) + 1
     
     # Test if scrambles can created throughout whole site
     if not n_scrambles.is_integer():
@@ -82,9 +82,75 @@ def create_scrambles(sequence, windowsize, overlap, attempts, preserve_content=T
     
     indices = lambda i: slice((windowsize-overlap) * i, (windowsize-overlap) * i + windowsize)
     
-    for i in range(int(n_scrambles)+1):
+    for i in range(int(n_scrambles)):
         temp_sequence = list(sequence)
-        temp_sequence[indices(i)] = scramble(sequence, attempts, preserve_content=True)
-        scrambled_sequences[i] = "".join(temp_sequence)
+        temp_sequence[indices(i)] = scramble(sequence[indices(i)], attempts, preserve_content=True)
+        scrambled_sequences[i+1] = "".join(temp_sequence)
     
     return scrambled_sequences
+
+"""
+def site_single_mutations(sequence, site_start=0, site_end=-1, alph_type="DNA"):
+    
+    if alph_type == "DNA":
+        letters = np.array(["A", "C", "G", "T"])
+        scrambled_sequences = [sequence]
+    
+        for i in site_start:site_end
+            mutations = filter(x-> x[1] != sequence[i], letters)
+            for x in mutations
+                temp_sequence = collect(sequence)
+                temp_sequence[i] = x[1]
+                push!(scrambled_sequences, string(temp_sequence...))
+            end
+        end
+    elif alph_type == "Numeric"
+        letters = collect(1:4)
+        scrambled_sequences = [sequence]
+        for i in site_start:site_end
+            mutations = filter(x-> x[1] != sequence[i], letters)
+            for x in mutations
+                temp_sequence = deepcopy(sequence)
+                temp_sequence[i] = x[1]
+                push!(scrambled_sequences, temp_sequence)
+            end
+        end
+    else:
+        raise ValueError("Alphabet type has to be either \"DNA\" or \"Numbers\"")
+    
+    return scrambled_sequences
+
+
+
+function site_single_mutations(sequence; alph_type::String="DNA")
+    
+    if alph_type == "DNA"
+        letters = ["A", "C", "G", "T"]
+        scrambled_sequences = [sequence]
+    
+        for i in 1:length(sequence)
+            mutations = filter(x-> x[1] != sequence[i], letters)
+            for x in mutations
+                temp_sequence = collect(sequence)
+                temp_sequence[i] = x[1]
+                push!(scrambled_sequences, string(temp_sequence...))
+            end
+        end
+    elseif alph_type == "Numeric"
+        letters = collect(1:4)
+        scrambled_sequences = [sequence]
+        for i in 1:length(sequence)
+            mutations = filter(x-> x[1] != sequence[i], letters)
+            for x in mutations
+                temp_sequence = deepcopy(sequence)
+                temp_sequence[i] = x[1]
+                push!(scrambled_sequences, temp_sequence)
+            end
+        end
+    else
+        throw(ArgumentError("Alphabet type has to be either \"DNA\" or \"Numbers\""))
+    end
+    
+    return scrambled_sequences
+end
+"""

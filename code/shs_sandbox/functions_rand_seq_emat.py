@@ -84,8 +84,8 @@ def sum_emat(seq, emat):
     mat_vals = []
     
     for ind,char in enumerate(seq, start = 0):
-        print(ind)
-        print(char)
+        #print(ind)
+        #print(char)
         mat_vals.append(emat.iloc[ind][char])
         
     return(sum(mat_vals))

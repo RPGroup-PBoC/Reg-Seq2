@@ -18,11 +18,9 @@ def gen_rand_seq(length):
     seq : string
          Random DNA sequence
     """
-    
+
     nt = ['A','T','C','G'] #nucleotides
-    
     seq = ''.join(random.choice(nt) for i in range(length))
-    
     return(seq)
 
 

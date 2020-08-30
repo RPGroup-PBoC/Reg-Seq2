@@ -4,6 +4,25 @@ import copy
 import random
 
 
+def gen_rand_seq(length):
+    """
+    Generate a random DNA sequence of defined length
+    
+    Parameters
+    ----------
+    length : int
+    
+    Returns
+    ---------
+    seq : string
+         Random DNA sequence
+    """
+
+    nt = ['A','T','C','G'] #nucleotides
+    seq = ''.join(random.choice(nt) for i in range(length))
+    return(seq)
+
+
 def scramble(sequence, attempts, preserve_content=True):
     """
     Scramble letters of a given sequence. Returns most distant sequence.
@@ -111,43 +130,90 @@ def create_scrambles_df(sequence, windowsize, overlap, attempts, preserve_conten
         
     Returns
     -------
-    scrambled_sequences : list
-        List of scrambled sequences
+    scrambled_sequences : Pandas.DataFrame
+        DataFrame of scrambled sequences
     """
     
-    if overlap >= windowsize:
-        raise ValueError("Overlap cannot be equal to or bigger than windowsize.")
-        
     l_sequence = len(sequence)
     n_scrambles = (l_sequence - windowsize) / (windowsize - overlap) + 1
     
     # Test if scrambles can created throughout whole site
     if not n_scrambles.is_integer():
         raise ValueError("Cannot make scrambles with windowsize {} and overlap {}.".format(windowsize, overlap))
-    
-    scrambled_sequences = np.empty(int(n_scrambles) + 1, dtype='<U160')
-    scrambled_sequences[0] = sequence
-    
-    indices = lambda i: slice((windowsize-overlap) * i, (windowsize-overlap) * i + windowsize)
-    
-    for i in range(int(n_scrambles)):
-        #print((windowsize-overlap)*i)
-        #print((windowsize-overlap)*i + windowsize)
-        temp_sequence = list(sequence)
-        temp_sequence[indices(i)] = scramble(sequence[indices(i)], attempts, preserve_content=True)
-        scrambled_sequences[i+1] = "".join(temp_sequence)
-    
+        
+    scrambled_sequences = create_scrambles(sequence, windowsize, overlap, attempts, preserve_content=True)
     start_pos = np.arange(0,int(n_scrambles),1)*(windowsize-overlap)
     stop_pos = np.arange(0,int(n_scrambles),1)*(windowsize-overlap)+windowsize
     
-    #print(start_pos)
-    #print(stop_pos)
-    #print(scrambled_sequences)
-    
     scramble_df = pd.DataFrame({'start_pos':start_pos, 'stop_pos':stop_pos, 'sequence':scrambled_sequences[1:]})
+    scramble_df['center_pos'] = scramble_df[['start_pos','stop_pos']].mean(axis = 1)
     
-    #return scrambled_sequences
     return scramble_df
+
+
+def gen_emat_rand(site_size):
+    """
+    Generate a random energy matrix for a defined sequence length. Arbitrary values for each possible base.
+    
+    Parameters
+    ----------
+    site_size : int
+        Length of the sequence to generate the energy matrix for, in bp.
+    
+    Returns
+    ----------
+    energy matrix : np.array
+    """
+    return(np.random.normal(1,1,(site_size,4)))
+
+
+def gen_emat_single_site(seq, site_start, site_size):
+    """
+    Generate energy matrix for sequence with one site. Outside of site matrix is zero.
+    
+    Parameters
+    ----------
+    seq : string
+    
+    site_start : int
+    
+    site_size : int
+    
+    Returns
+    ---------
+    seq_emat : np.array
+    """
+    
+    seq_emat = np.zeros((len(seq),4))
+    
+    seq_emat[site_start:(site_start + site_size),:] = gen_emat_rand(site_size)
+    
+    return(seq_emat)
+
+
+def sum_emat(seq, emat):
+    """
+    Retrieve and sum the energy matrix values for a given sequence variant and matrix.
+    
+    Parameters
+    ----------
+    seq : string
+    
+    emat : pd.DataFrame with columns A T C G
+    
+    Returns
+    ---------
+    sum : float
+    """
+    
+    mat_vals = []
+    
+    for ind,char in enumerate(seq, start = 0):
+        #print(ind)
+        #print(char)
+        mat_vals.append(emat.iloc[ind][char])
+        
+    return(sum(mat_vals))
 
 
 """

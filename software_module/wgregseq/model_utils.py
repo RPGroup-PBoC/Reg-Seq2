@@ -2,7 +2,7 @@ import numpy as np
 from .gen_utils import isint
 
 
-def gen_emat_rand(site_size):
+def gen_emat_rand(site_size, mean=1, sd=1):
     """
     Generate a random energy matrix for a defined sequence length. Arbitrary values for each possible base, normally distributed around mean 1 with standard deviation 1.
     
@@ -10,7 +10,10 @@ def gen_emat_rand(site_size):
     ----------
     site_size : int
         Length of the sequence to generate the energy matrix for, in bp.
-    
+    mean : float
+        Mean of entries in energy matrix.
+    sd : float
+        Standard deviation of entries in energy matrix.
     Returns
     ----------
     energy_matrix : np.array
@@ -22,7 +25,7 @@ def gen_emat_rand(site_size):
         # If type float, change to int
         site_size = int(site_size)
         
-    energy_matrix = np.random.normal(1, 1, (site_size, 4))
+    energy_matrix = np.random.normal(mean, sd, (site_size, 4))
     return energy_matrix
 
 
@@ -93,19 +96,19 @@ def gen_emat_single_site(
         
         
     # Set background values
-    seq_emat = np.random.normal(background_mean,background_sd,(len(seq),4))
+    seq_emat = np.random.normal(background_mean, background_sd, (len(seq), 4))
     
     # Set site values
-    seq_emat[site_start:(site_start + site_size),:] = np.random.normal(site_mean, site_sd,(site_size,4))
+    seq_emat[site_start:(site_start + site_size), :] = np.random.normal(site_mean, site_sd,(site_size, 4))
     
     # Convert np.array to pd.DataFrame
-    seq_emat = pd.DataFrame(data = seq_emat, columns = ('A','T','C','G'))
+    seq_emat = pd.DataFrame(data=seq_emat, columns=('A','T','C','G'))
     
     # Set WT values = 0
-    for ind,char in enumerate(seq, start = 0):
-        seq_emat.iloc[ind][char]=0
+    for ind,char in enumerate(seq, start=0):
+        seq_emat.iloc[ind][char] = 0
     
-    return(seq_emat)
+    return seq_emat 
 
 
 def sum_emat(seq, emat):
@@ -130,4 +133,4 @@ def sum_emat(seq, emat):
         #print(char)
         mat_vals.append(emat.iloc[ind][char])
         
-    return(sum(mat_vals))
+    return sum(mat_vals) 

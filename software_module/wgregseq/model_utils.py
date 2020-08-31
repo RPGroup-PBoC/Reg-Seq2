@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from .gen_utils import isint
 
 

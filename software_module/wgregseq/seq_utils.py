@@ -197,7 +197,7 @@ def create_scrambles_df(sequence, windowsize, overlap, attempts, preserve_conten
     scrambled_sequences = create_scrambles(sequence, windowsize, overlap, attempts, preserve_content=True)
     
     # Read wild type sequence
-    wild_type = scrambled_sequences[0[]]
+    wild_type = scrambled_sequences[0]
     
     # Compute start and end positions of scrambles
     start_pos = np.arange(0, int(n_scrambles), 1) * (windowsize - overlap)

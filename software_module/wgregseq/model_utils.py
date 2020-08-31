@@ -1,9 +1,10 @@
 import numpy as np
+from .gen_utils import isint
 
 
 def gen_emat_rand(site_size):
     """
-    Generate a random energy matrix for a defined sequence length. Arbitrary values for each possible base.
+    Generate a random energy matrix for a defined sequence length. Arbitrary values for each possible base, normally distributed around mean 1 with standard deviation 1.
     
     Parameters
     ----------
@@ -12,14 +13,32 @@ def gen_emat_rand(site_size):
     
     Returns
     ----------
-    energy matrix : np.array
+    energy_matrix : np.array
     """
-    return(np.random.normal(1,1,(site_size,4)))
+    # Check argument types
+    if not isint(site_size):
+        raise ValueError("`site_size` has to be an integer.")
+    else:
+        # If type float, change to int
+        site_size = int(site_size)
+        
+    energy_matrix = np.random.normal(1, 1, (site_size, 4))
+    return energy_matrix
 
 
-def gen_emat_single_site(seq, site_start, site_size):
+
+def gen_emat_single_site(
+    seq, 
+    site_start, 
+    site_size, 
+    site_mean=1, 
+    site_sd=1, 
+    background_mean=0, 
+    background_sd=0):
     """
-    Generate energy matrix for sequence with one site. Outside of site matrix is zero.
+    Generate energy matrix for sequence with one site. 
+    Mean and sd values can be set for site and non site positions.
+    WT sequence is set to zero.
     
     Parameters
     ----------
@@ -29,14 +48,62 @@ def gen_emat_single_site(seq, site_start, site_size):
     
     site_size : int
     
+    site_mean: float
+        mean energy for site mutations, for np.random.normal
+        
+    site_sd: float
+        standard deviation of energy for site mutations, for np.random.normal
+    
+    background_mean: float
+        mean energy for non site mutations, for np.random.normal
+    
+    background_sd: float
+        standard deviation of energy for non site mutations, for np.random.normal
+    
     Returns
     ---------
-    seq_emat : np.array
+    seq_emat : pd.DataFrame
+        generated energy matrix
     """
     
-    seq_emat = np.zeros((len(seq),4))
+    # Check argument types
+    if not isint(site_start):
+        raise ValueError("`site_start` has to be an integer.")
+    else:
+        # If type float, change to int
+        site_start = int(site_start)
+        
+    if not isint(site_size):
+        raise ValueError("`site_size` has to be an integer.")
+    else:
+        # If type float, change to int
+        site_size = int(site_size)
+        
+    if not isinstance(site_mean, int) or isinstance(site_mean, float):
+        raise ValueError("`site_mean` has to be an integer or float.")
     
-    seq_emat[site_start:(site_start + site_size),:] = gen_emat_rand(site_size)
+    if not isinstance(site_sd, int) or isinstance(site_sd, float):
+        raise ValueError("`site_sd` has to be an integer or float.")
+        
+    if not isinstance(background_mean, int) or isinstance(background_mean, float):
+        raise ValueError("`background_mean` has to be an integer or float.")
+        
+    if not isinstance(background_sd, int) or isinstance(background_sd, float):
+        raise ValueError("`background_sd` has to be an integer or float.")
+        
+        
+    # Set background values
+    seq_emat = np.random.normal(background_mean,background_sd,(len(seq),4))
+    
+    # Set site values
+    seq_emat[site_start:(site_start + site_size),:] = np.random.normal(site_mean, site_sd,(site_size,4))
+    
+    # Convert np.array to pd.DataFrame
+    seq_emat = pd.DataFrame(data = seq_emat, columns = ('A','T','C','G'))
+    
+    # Set WT values = 0
+    for ind,char in enumerate(seq, start = 0):
+        seq_emat.iloc[ind][char]=0
     
     return(seq_emat)
 

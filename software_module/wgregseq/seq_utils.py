@@ -170,6 +170,8 @@ def create_scrambles_df(sequence, windowsize, overlap, attempts, preserve_conten
     -------
     scrambled_sequences : Pandas.DataFrame
         DataFrame of scrambled sequences.
+    wild_type : string
+        Wild type sequence without scrambles.
     """
     
     # Check argument types
@@ -179,37 +181,6 @@ def create_scrambles_df(sequence, windowsize, overlap, attempts, preserve_conten
         # If type float, change to int
         windowsize = int(windowsize)
         
-    scrambled_sequences = create_scrambles(sequence, windowsize, overlap, attempts, preserve_content=True)
-    start_pos = np.arange(0,int(n_scrambles),1)*(windowsize-overlap)
-    stop_pos = np.arange(0,int(n_scrambles),1)*(windowsize-overlap)+windowsize
-    
-    scramble_df = pd.DataFrame({'start_pos':start_pos, 'stop_pos':stop_pos, 'sequence':scrambled_sequences[1:]})
-    scramble_df['center_pos'] = scramble_df[['start_pos','stop_pos']].mean(axis = 1)
-    
-    return scramble_df
-
-
-def gen_emat_rand(site_size):
-    """
-    Generate a random energy matrix for a defined sequence length. Arbitrary values for each possible base.
-    
-    Parameters
-    ----------
-    site_size : int
-        Length of the sequence to generate the energy matrix for, in bp.
-    
-    Returns
-    ----------
-    energy matrix : np.array
-    """
-    return(np.random.normal(1,1,(site_size,4)))
-
-'''
-# old version
-def gen_emat_single_site(seq, site_start, site_size):
-    """
-    Generate energy matrix for sequence with one site. Outside of site matrix is zero.
-
     if not isint(overlap):
         raise ValueError("`overlap` has to be an integer.")
     else:
@@ -222,74 +193,25 @@ def gen_emat_single_site(seq, site_start, site_size):
         # If type float, change to int
         attempts = int(attempts)
     
-    if overlap >= windowsize:
-        raise ValueError("overlap cannot be equal to or bigger than windowsize.")
-    
-    
-        
-    # Get scrambled sequences
+    # Get scrambles
     scrambled_sequences = create_scrambles(sequence, windowsize, overlap, attempts, preserve_content=True)
     
-    # Get number of scrambles (minus one for wild type)
-    n_scrambles = len(scrambled_sequences) - 1
+    # Read wild type sequence
+    wild_type = scrambled_sequences[0[]]
     
-    # Compute start and stop positions of scrambles
+    # Compute start and end positions of scrambles
     start_pos = np.arange(0, int(n_scrambles), 1) * (windowsize - overlap)
-    stop_pos = np.arange(0, int(n_scrambles), 1) * (windowsize - overlap) + windowsize
+    stop_pos = np.arange(0,int(n_scrambles), 1) * (windowsize - overlap) + windowsize
     
-    # Store scrambles in DataFrame
+    # Store sequences in data frame
     scramble_df = pd.DataFrame({'start_pos':start_pos, 'stop_pos':stop_pos, 'sequence':scrambled_sequences[1:]})
+    
+    # Compute center of scrambles
     scramble_df['center_pos'] = scramble_df[['start_pos','stop_pos']].mean(axis = 1)
     
-    return(seq_emat)
-'''
+    return scramble_df, wild_type
 
-def gen_emat_single_site(seq, site_start, site_size, site_mean = 1, site_sd = 1, background_mean = 0, background_sd = 0):
-    """
-    Generate energy matrix for sequence with one site. 
-    Mean and sd values can be set for site and non site positions.
-    WT sequence is set to zero.
-    
-    Parameters
-    ----------
-    seq : string
-    
-    site_start : int
-    
-    site_size : int
-    
-    site_mean: float
-        mean energy for site mutations, for np.random.normal
-        
-    site_sd: float
-        standard deviation of energy for site mutations, for np.random.normal
-    
-    background_mean: float
-        mean energy for non site mutations, for np.random.normal
-    
-    background_sd: float
-        standard deviation of energy for non site mutations, for np.random.normal
-    
-    Returns
-    ---------
-    seq_emat : pd.DataFrame
-        generated energy matrix
-    """
-    
-    # Set background values
-    seq_emat = np.random.normal(background_mean,background_sd,(len(seq),4))
-    
-    # Set site values
-    seq_emat[site_start:(site_start + site_size),:] = np.random.normal(site_mean, site_sd,(site_size,4))
-    
-    # Convert np.array to pd.DataFrame
-    seq_emat = pd.DataFrame(data = seq_emat, columns = ('A','T','C','G'))
-    
-    # Set WT values = 0
-    for ind,char in enumerate(seq, start = 0):
-        seq_emat.iloc[ind][char]=0
-    
-    return(seq_emat)
+
 
 
 """

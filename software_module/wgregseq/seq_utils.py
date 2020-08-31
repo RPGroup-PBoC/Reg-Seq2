@@ -170,8 +170,6 @@ def create_scrambles_df(sequence, windowsize, overlap, attempts, preserve_conten
     -------
     scrambled_sequences : Pandas.DataFrame
         DataFrame of scrambled sequences.
-    wild_type : string
-        Wild type sequence without scrambles.
     """
     
     # Check argument types
@@ -199,6 +197,9 @@ def create_scrambles_df(sequence, windowsize, overlap, attempts, preserve_conten
     # Read wild type sequence
     wild_type = scrambled_sequences[0]
     
+    # Get number of scrambles
+    n_scrambles = len(scrambled_sequences) - 1
+    
     # Compute start and end positions of scrambles
     start_pos = np.arange(0, int(n_scrambles), 1) * (windowsize - overlap)
     stop_pos = np.arange(0,int(n_scrambles), 1) * (windowsize - overlap) + windowsize
@@ -209,7 +210,7 @@ def create_scrambles_df(sequence, windowsize, overlap, attempts, preserve_conten
     # Compute center of scrambles
     scramble_df['center_pos'] = scramble_df[['start_pos','stop_pos']].mean(axis = 1)
     
-    return scramble_df, wild_type
+    return scramble_df
 
 
 

@@ -46,20 +46,17 @@ def gen_emat_single_site(
     Parameters
     ----------
     seq : string
-    
+        Sequence. Used to set entries for wild type binding site to zero.
     site_start : int
-    
+        First base of binding site
     site_size : int
-    
+        Length of binding site.
     site_mean: float
         mean energy for site mutations, for np.random.normal
-        
     site_sd: float
         standard deviation of energy for site mutations, for np.random.normal
-    
     background_mean: float
         mean energy for non site mutations, for np.random.normal
-    
     background_sd: float
         standard deviation of energy for non site mutations, for np.random.normal
     

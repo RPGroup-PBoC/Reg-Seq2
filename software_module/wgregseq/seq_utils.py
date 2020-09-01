@@ -3,6 +3,7 @@ import pandas as pd
 import copy
 import random
 from .gen_utils import isint
+import warnings
 
 
 def gen_rand_seq(length, letters=['A','T','C','G']):
@@ -79,7 +80,13 @@ def scramble(sequence, attempts, preserve_content=True):
     
     
 
-def create_scrambles(sequence, windowsize, overlap, attempts, preserve_content=True):
+def create_scrambles(
+    sequence, 
+    windowsize, 
+    overlap,
+    attempts, 
+    preserve_content=True, 
+    ignore_imperfect_scrambling=False):
     """
     Scramble letters in a window of given sequence. 
     
@@ -93,9 +100,11 @@ def create_scrambles(sequence, windowsize, overlap, attempts, preserve_content=T
         Number of letters that each window overlaps with the neighbors
     attempts : int
         Number of scrambles which are created. Most dissimilar one is chosen.
-    preserve_content : bool
+    preserve_content : bool, default True
         If True, shuffles the existing sequence. If Flase, a completely arbitrary sequence is created.
-        
+    ignore_imperfect_scrambling : bool, default False 
+        If False, returns an error when scrambles are not created evenly (last scramble does not end at
+        sequence end).
     Returns
     -------
     scrambled_sequences : list
@@ -130,7 +139,13 @@ def create_scrambles(sequence, windowsize, overlap, attempts, preserve_content=T
     
     # Test if scrambles can created throughout whole site
     if not n_scrambles.is_integer():
-        raise ValueError("Cannot make scrambles with windowsize {} and overlap {}.".format(windowsize, overlap))
+        if not ignore_imperfect_scrambling:
+            raise ValueError("Cannot make scrambles with windowsize {} and overlap {}.".format(windowsize, overlap))
+        else:
+            n_scrambles = np.floor(n_scrambles)
+            warnings.resetwarnings()
+            warnings.warn("Imperfect scrambles. Last scramble is omitted.")
+        
     
     # Create array to store sequences and add wild type
     scrambled_sequences = np.empty(int(n_scrambles) + 1, dtype='<U160')

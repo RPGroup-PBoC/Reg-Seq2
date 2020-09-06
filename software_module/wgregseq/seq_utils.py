@@ -84,7 +84,8 @@ def create_scrambles(
     sequence, 
     windowsize, 
     overlap,
-    attempts, 
+    attempts,
+    number=1,
     preserve_content=True, 
     ignore_imperfect_scrambling=False):
     """
@@ -100,11 +101,14 @@ def create_scrambles(
         Number of letters that each window overlaps with the neighbors
     attempts : int
         Number of scrambles which are created. Most dissimilar one is chosen.
+    number : int
+        Number of scrambles per window.
     preserve_content : bool, default True
         If True, shuffles the existing sequence. If Flase, a completely arbitrary sequence is created.
     ignore_imperfect_scrambling : bool, default False 
         If False, returns an error when scrambles are not created evenly (last scramble does not end at
         sequence end).
+        
     Returns
     -------
     scrambled_sequences : list
@@ -133,6 +137,12 @@ def create_scrambles(
     if overlap >= windowsize:
         raise ValueError("overlap cannot be equal to or bigger than windowsize.")
         
+    if not isint(number):
+        raise ValueError("`windowsize` has to be an integer.")
+    else:
+        # If type float, change to int
+        number = int(number)
+        
     # Compute number of scrambles
     l_sequence = len(sequence)
     n_scrambles = (l_sequence - windowsize) / (windowsize - overlap) + 1
@@ -148,7 +158,7 @@ def create_scrambles(
         
     
     # Create array to store sequences and add wild type
-    scrambled_sequences = np.empty(int(n_scrambles) + 1, dtype='<U160')
+    scrambled_sequences = np.empty(number * int(n_scrambles) + 1, dtype='<U160')
     scrambled_sequences[0] = sequence
     
     # Function to find right indices for scrambles
@@ -157,14 +167,22 @@ def create_scrambles(
     # Take subsequence and get scramble
     for i in range(int(n_scrambles)):
         temp_sequence = list(sequence)
-        temp_sequence[indices(i)] = scramble(sequence[indices(i)], attempts, preserve_content=True)
-        scrambled_sequences[i+1] = "".join(temp_sequence)
+        for j in range(number):
+            temp_sequence[indices(i)] = scramble(sequence[indices(i)], attempts, preserve_content=True)
+            scrambled_sequences[i * number + j + 1] = "".join(temp_sequence)
     
     return scrambled_sequences
 
 
 
-def create_scrambles_df(sequence, windowsize, overlap, attempts, preserve_content=True):
+def create_scrambles_df(
+    sequence, 
+    windowsize, 
+    overlap, 
+    attempts,
+    number=1,
+    preserve_content=True, 
+    ignore_imperfect_scrambling=False):
     """
     Scramble letters in a window of given sequence. Returns pandas df with metadata.
     
@@ -178,8 +196,13 @@ def create_scrambles_df(sequence, windowsize, overlap, attempts, preserve_conten
         Number of letters that each window overlaps with the neighbors
     attempts : int
         Number of scrambles which are created. Most dissimilar one is chosen.
-    preserve_content : bool
+    number : int
+        Number of scrambles per window.
+    preserve_content : bool, default True
         If True, shuffles the existing sequence. If Flase, a completely arbitrary sequence is created.
+    ignore_imperfect_scrambling : bool, default False 
+        If False, returns an error when scrambles are not created evenly (last scramble does not end at
+        sequence end).
         
     Returns
     -------
@@ -205,22 +228,44 @@ def create_scrambles_df(sequence, windowsize, overlap, attempts, preserve_conten
     else:
         # If type float, change to int
         attempts = int(attempts)
+        
+    if not isint(number):
+        raise ValueError("`attempts` has to be an integer.")
+    else:
+        # If type float, change to int
+        number = int(number)
     
     # Get scrambles
-    scrambled_sequences = create_scrambles(sequence, windowsize, overlap, attempts, preserve_content=True)
+    scrambled_sequences = create_scrambles(
+        sequence, 
+        windowsize, 
+        overlap, 
+        attempts,
+        number,
+        preserve_content,
+        ignore_imperfect_scrambling)
     
     # Read wild type sequence
     wild_type = scrambled_sequences[0]
     
     # Get number of scrambles
-    n_scrambles = len(scrambled_sequences) - 1
+    n_scrambles = int(np.floor((len(sequence) - windowsize) / (windowsize - overlap))) + 1
     
     # Compute start and end positions of scrambles
     start_pos = np.arange(0, int(n_scrambles), 1) * (windowsize - overlap)
     stop_pos = np.arange(0,int(n_scrambles), 1) * (windowsize - overlap) + windowsize
     
+    # Account for multiple scrambles per window
+    if number > 1:
+        start_pos = np.array([start_pos[i] * np.ones([n_scrambles, number])[i, :] for i in range(n_scrambles)]).flatten()
+        stop_pos = np.array([stop_pos[i] * np.ones([n_scrambles, number])[i, :] for i in range(n_scrambles)]).flatten()
+    
     # Store sequences in data frame
-    scramble_df = pd.DataFrame({'start_pos':start_pos, 'stop_pos':stop_pos, 'sequence':scrambled_sequences[1:]})
+    scramble_df = pd.DataFrame(
+        {'start_pos':start_pos, 
+         'stop_pos':stop_pos, 
+         'sequence':scrambled_sequences[1:]}
+    )
     
     # Compute center of scrambles
     scramble_df['center_pos'] = scramble_df[['start_pos','stop_pos']].mean(axis = 1)

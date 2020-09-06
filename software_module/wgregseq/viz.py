@@ -100,3 +100,7 @@ def titlebox(
         cax.set_facecolor("white")
     at = AnchoredText(text, loc=10, frameon=False, prop=dict(size=size, color=color))
     cax.add_artist(at)
+    
+    
+    
+    

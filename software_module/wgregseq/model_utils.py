@@ -130,3 +130,200 @@ def sum_emat(seq, emat):
         mat_vals.append(emat.iloc[ind][char])
         
     return sum(mat_vals) 
+
+def sum_emat_df(scrambles_df, emat):
+    """
+    Sums energy matrices for a dataframe of scrambles with `sum_emat()`.
+    
+    Parameters
+    ------------
+    scrambles_df : pd.DataFrame 
+        Output by `create_scrambles_df()`
+    emat : pd.DataFrame
+        Energy matrix output by `gen_emat_single_site()`
+        
+    Returns
+    ----------
+    scrambles_df : pd.DataFrame
+        Including the additive 'effect' column next to each scramble
+    """
+    
+    scrambles_df['effect'] = np.nan
+    
+    for ind, scr_seq in enumerate(scrambles_df['sequence'], start = 0):
+        #print(ind)
+        #print(scr_seq)
+        scrambles_df.at[ind,'effect'] = wgregseq.sum_emat(seq = scr_seq, emat = emat)
+        
+    return(scrambles_df)
+
+def gen_barcode_effects(barcode_num, barcode_noise, df):
+    """
+    Generate barcode effects for each scramble. Effects are drawn from a normal around the defined effect.
+    Wildtype effects are sampled from normal centered at 0.
+    
+    Parameters
+    ------------
+    barcode_num : int
+        Number of barcodes to generate for each scramble
+    barcode_noise : float
+        standard deviation of normal distribution to draw effects from for each barcode
+    df : pd.DataFrame
+        Dataframe with scrambles and effects output by `sum_emat_df()`
+    """
+    
+    #Generate wildtype barcode effects from normal(0, barcode_noise)
+    wt_bc_effects = np.random.normal(loc = 0, scale = barcode_noise, size = barcode_num)
+    
+    #Initialize new columns
+    df['barcode_effects'] = ''
+    df['wt_barcode_effects'] = ''
+    df['p_val'] = ''
+    
+    # Iterate through the scrambles in the dataframe
+    for i in range(len(df)):
+        
+        #Generate barcode effects from normal(effect, barcode_noise) and calculate barcode mean
+        barcode_effects = np.random.normal(loc=df.iloc[i]['effect'], scale=barcode_noise, size = barcode_num)
+        bc_mean = np.mean(barcode_effects)
+        
+        #Add vals to dataframe
+        df.at[i,'barcode_effects'] = barcode_effects
+        df.at[i,'bc_mean'] = bc_mean
+        df.at[i,'wt_barcode_effects'] = wt_bc_effects
+        
+        #Perform t-test on scramble barcode effects vs. wt barcode effects 
+        df.at[i,'p_val'] = stats.ttest_ind(df.iloc[i]['barcode_effects'], df.iloc[i]['wt_barcode_effects'], equal_var = False)[1]
+    
+    #Correct for multiple significance tests. Gives adjusted pval and significance call.
+    stats_corrected = statsmodels.stats.multitest.multipletests(df['p_val'])
+    
+    df['adj_p_val'] = stats_corrected[1]
+    df['sig'] = stats_corrected[0]
+
+    return(df)
+
+def gen_scramble_dataset(seq_length = 50,
+                         replicates = 100,
+                         windowsize = 10, 
+                         overlap = 5, 
+                         attempts = 100, 
+                         preserve_content = True, 
+                         site_start = 20, 
+                         site_size = 10, 
+                         site_mean = 1, 
+                         site_sd = 1, 
+                         background_mean = 0, 
+                         background_sd = 0,
+                         barcode_num = 10,
+                         barcode_noise = 1):
+    """
+    Generate a scramble dataset with replicate sequences drawn from the same parameters. 
+    Wraps gen_rand_seq(), gen_emat_single_site(), create_scrambles_df(), sum_emat_df(), and gen_barcode_effects().
+    
+    Parameters
+    -------------
+    seq_length : int
+        Length of sequence to generate in bp
+    replicates : int
+        Number of individual sequences to generate and scramble
+    windowsize : int
+        Size of scramble in bp
+    overlap : int
+        Overlap of scrambles in bp
+    attempts : int
+        Number of scrambles which are created. Most dissimilar one is chosen.
+    preserve_content : bool
+        If True, shuffles the existing sequence. If False, a completely arbitrary sequence is created.
+    site_start : int
+        First base of binding site
+    site_size : int
+        Length of binding site.
+    site_mean: float
+        mean energy for site mutations, for np.random.normal
+    site_sd: float
+        standard deviation of energy for site mutations, for np.random.normal
+    background_mean: float
+        mean energy for non site mutations, for np.random.normal
+    background_sd: float
+        standard deviation of energy for non site mutations, for np.random.normal
+    barcode_num : int
+        Number of barcodes to generate for each scramble
+    barcode_noise : float
+        standard deviation of normal distribution to draw effects from for each barcode
+        
+    Returns
+    ---------
+    results : pd.DataFrame
+        Dataframe containing generated scrambles for each sequence, WT and barcode effects, and significance test results.
+    """
+    
+    results = pd.DataFrame()
+    
+    for i in range(replicates):
+        
+        #if (i % 10)==0: print(i)
+        # Generate WT sequence
+        seq = wgregseq.gen_rand_seq(seq_length)
+        
+        # Generate energy matrix
+        emat = wgregseq.gen_emat_single_site(seq = seq, 
+                                             site_start = site_start, 
+                                             site_size = site_size, 
+                                             site_mean = site_mean, 
+                                             site_sd = site_sd, 
+                                             background_mean = background_mean, 
+                                             background_sd = background_sd)
+        
+        # Generate scrambles
+        scrambles = wgregseq.create_scrambles_df(sequence = seq, 
+                                                 windowsize = windowsize, 
+                                                 overlap = overlap, 
+                                                 attempts = attempts, 
+                                                 preserve_content = True)
+        
+        # Sum effects for each scramble
+        scramble_effects = wgregseq.sum_emat_df(scrambles_df = scrambles, emat = emat)
+        scramble_effects['rep'] = i
+
+        barcode_effects = wgregseq.gen_barcode_effects(barcode_num = barcode_num, barcode_noise = barcode_noise, df = scramble_effects)
+        
+        results = results.append(barcode_effects)
+    
+    return(results)
+        
+def merge_sig_scrambles(df):
+    """
+    Merge significant adjacent scrambles with same sign effect (positive or negative) to find regulatory sites.
+    
+    Parameters
+    -----------
+    df : pd.DataFrame
+        Dataframe of generated scrambles and effects, probably from gen_scramble_dataset(). 
+        Must contain columns sig : bool, and bc_mean : float
+        
+    Returns
+    ----------
+    site_positions : pd.DataFrame
+        An aggregated dataframe of all unique site positions from merged scrambles. 
+    """
+    sig_pos_bool = (df['sig'] == True) & (df['bc_mean']>0)
+    sig_neg_bool = (df['sig'] == True) & (df['bc_mean']<0)
+    
+    df_sig_pos = df[sig_pos_bool]
+    df_sig_neg = df[sig_neg_bool]
+    
+    df_sig_pos['site_id']=df_sig_pos.groupby((~sig_pos_bool).cumsum()).grouper.group_info[0]
+    df_sig_neg['site_id']=df_sig_neg.groupby((~sig_neg_bool).cumsum()).grouper.group_info[0]
+    
+    site_positions_pos = df_sig_pos.groupby(['rep','site_id']).agg({'start_pos':'min', 'stop_pos':'max'})
+    site_positions_pos['effect_sign'] = '+'
+
+    site_positions_neg = df_sig_neg.groupby(['rep','site_id']).agg({'start_pos':'min', 'stop_pos':'max'})
+    site_positions_neg['effect_sign'] = '-'
+
+    site_positions = site_positions_pos.append(site_positions_neg)
+    site_positions['center_pos'] = site_positions[['start_pos','stop_pos']].mean(axis = 1)
+    site_positions['site_size'] = site_positions['stop_pos'] - site_positions['start_pos']
+
+    return(site_positions)

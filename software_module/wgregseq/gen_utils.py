@@ -47,3 +47,13 @@ def choose_dict(dicttype, modeltype='MAT'):
             for i in range(len(seq_dict)) for z in range(len(seq_dict))}
         inv_dict = {seq_dict[i]:i for i in seq_dict.keys()}
     return seq_dict, inv_dict
+
+
+def complement_seq(sequence, rev=False):
+    com_dict = {"A": "T", "T": "A", "G": "C", "C": "G"}
+    rev_list = [com_dict[x] for x in sequence]
+    if rev:
+        com_sequence = "".join(reversed(rev_list))
+    else:
+        com_sequence = "".join(rev_list)
+    return com_sequence

@@ -1,8 +1,15 @@
+import sys
+from contextlib import suppress
 import numpy as np
 import pandas as pd
 import copy
 import random
+
+from Bio.Restriction import *
+from Bio.Seq import Seq
+
 from .gen_utils import isint
+
 import warnings
 
 
@@ -117,19 +124,19 @@ def create_scrambles(
     
     # Check argument types
     if not isint(windowsize):
-        raise ValueError("`windowsize` has to be an integer.")
+        raise TypeError("`windowsize` has to be an integer.")
     else:
         # If type float, change to int
         windowsize = int(windowsize)
         
     if not isint(overlap):
-        raise ValueError("`overlap` has to be an integer.")
+        raise TypeError("`overlap` has to be an integer.")
     else:
         # If type float, change to int
         overlap = int(overlap)
         
     if not isint(attempts):
-        raise ValueError("`attempts` has to be an integer.")
+        raise TypeError("`attempts` has to be an integer.")
     else:
         # If type float, change to int
         attempts = int(attempts)
@@ -138,7 +145,7 @@ def create_scrambles(
         raise ValueError("overlap cannot be equal to or bigger than windowsize.")
         
     if not isint(number):
-        raise ValueError("`windowsize` has to be an integer.")
+        raise TypeError("`windowsize` has to be an integer.")
     else:
         # If type float, change to int
         number = int(number)
@@ -212,25 +219,25 @@ def create_scrambles_df(
     
     # Check argument types
     if not isint(windowsize):
-        raise ValueError("`windowsize` has to be an integer.")
+        raise TypeError("`windowsize` has to be an integer.")
     else:
         # If type float, change to int
         windowsize = int(windowsize)
         
     if not isint(overlap):
-        raise ValueError("`overlap` has to be an integer.")
+        raise TypeError("`overlap` has to be an integer.")
     else:
         # If type float, change to int
         overlap = int(overlap)
         
     if not isint(attempts):
-        raise ValueError("`attempts` has to be an integer.")
+        raise TypeError("`attempts` has to be an integer.")
     else:
         # If type float, change to int
         attempts = int(attempts)
         
     if not isint(number):
-        raise ValueError("`attempts` has to be an integer.")
+        raise TypeError("`attempts` has to be an integer.")
     else:
         # If type float, change to int
         number = int(number)
@@ -273,8 +280,80 @@ def create_scrambles_df(
     return scramble_df
 
 
+rest_sites = {
+    
+}
 
 
+def find_restriction_sites(enzyme, sequence_list):
+    """Searches for restriction sites of a specific enzyme in a list of sequences
+    
+    Parameters
+    ----------
+    enzyme : Bio.Restriction or string
+        Name of the enzyme.
+    sequence_list: array-type
+        
+    """
+    
+    
+    if type(enzyme) == str:
+        try:
+            getattr(sys.modules[__name__], enzyme)
+        except AttributeError:
+            raise ValueError("There is no restriction enzyme {}. Check spelling, naming is case-sensitive.".format(enzyme))
+        enzyme = getattr(sys.modules[__name__], enzyme)
+        
+    # Enzyme classes in Biopython are weird but this works
+    elif not (type(enzyme).__bases__[-1] == Restriction.RestrictionType): 
+        raise TypeError("enzyme has to be either string of Bio.Restriction.Restriction.RestrictionType")
+    
+    # Transform sequence inputs
+    sequence_list = _check_sequence_list(sequence_list)
+   
+    return [enzyme.search(sequence) for sequence in sequence_list]
+    
+    
+def scan_enzymes(sequence_list, enzymes=[]):
+    """Compute number if restriction sites in a list of sequences for list of enzymes.
+    
+    Parameters
+    ----------
+    sequence_list : array-like
+    
+    enzymes : 
+    
+    """
+    
+    # Check inputs
+    if type(enzymes) not in [list, np.ndarray, pd.core.series.Series]:
+        raise TypeError("enzymes has to be list, numpy array or pandas series.")
+    else:
+        if any([(not type(enz) == str) and (not type(enzyme).__bases__[-1] == Restriction.RestrictionType) for enz in enzymes]):
+            raise TypeError("entries in `enzymes` have to be of type string or Bio.RestrictionType")
+            
+    # Check inputs
+    sequence_list = _check_sequence_list(sequence_list)
+    
+    # Return list of enzymes if none given
+    ret_list = False
+    # Choose all commercially available enzymes if none given
+    if len(enzymes) == 0:
+        enzymes = CommOnly
+        ret_list = True
+        
+    num_sites = np.zeros(len(enzymes))
+    for i, enz in enumerate(enzymes):
+        sites = find_restriction_sites(enz, sequence_list)
+        num_sites[i] = len([ele for sub in sites for ele in sub])
+    
+    if ret_list:
+        return num_sites, enzymes
+    else:
+        return num_sites
+        
+    
+    
 """
 def site_single_mutations(sequence, site_start=0, site_end=-1, alph_type="DNA"):
     
@@ -340,3 +419,18 @@ function site_single_mutations(sequence; alph_type::String="DNA")
     return scrambled_sequences
 end
 """
+
+
+def _check_sequence_list(sequence_list):
+    if type(sequence_list) not in [list, np.ndarray, pd.core.series.Series]:
+        raise TypeError("sequence_list has to be list, numpy array or pandas series.")
+    else:
+        if any([type(seq) not in [str, Seq] for seq in sequence_list]):
+            raise TypeError("entries in `sequence_list` have to be of type string or Bio.Seq.Seq.")
+            
+    for i,seq in enumerate(sequence_list):
+        if type(seq) == str:
+            sequence_list[i] = Seq(seq)
+            
+    return sequence_list
+    

@@ -1,5 +1,7 @@
 import numpy as np
 import pandas as pd
+from scipy import stats
+import statsmodels.api
 from .gen_utils import isint
 
 
@@ -28,7 +30,6 @@ def gen_emat_rand(site_size, mean=1, sd=1):
         
     energy_matrix = np.random.normal(mean, sd, (site_size, 4))
     return energy_matrix
-
 
 
 def gen_emat_single_site(
@@ -131,6 +132,7 @@ def sum_emat(seq, emat):
         
     return sum(mat_vals) 
 
+
 def sum_emat_df(scrambles_df, emat):
     """
     Sums energy matrices for a dataframe of scrambles with `sum_emat()`.
@@ -156,6 +158,7 @@ def sum_emat_df(scrambles_df, emat):
         scrambles_df.at[ind,'effect'] = wgregseq.sum_emat(seq = scr_seq, emat = emat)
         
     return(scrambles_df)
+
 
 def gen_barcode_effects(barcode_num, barcode_noise, df):
     """
@@ -203,20 +206,21 @@ def gen_barcode_effects(barcode_num, barcode_noise, df):
 
     return(df)
 
-def gen_scramble_dataset(seq_length = 50,
-                         replicates = 100,
-                         windowsize = 10, 
-                         overlap = 5, 
-                         attempts = 100, 
-                         preserve_content = True, 
-                         site_start = 20, 
-                         site_size = 10, 
-                         site_mean = 1, 
-                         site_sd = 1, 
-                         background_mean = 0, 
-                         background_sd = 0,
-                         barcode_num = 10,
-                         barcode_noise = 1):
+def gen_scramble_dataset(
+    seq_length = 50,
+    replicates = 100,
+    windowsize = 10, 
+    overlap = 5, 
+    attempts = 100, 
+    preserve_content = True, 
+    site_start = 20, 
+    site_size = 10, 
+    site_mean = 1, 
+    site_sd = 1, 
+    background_mean = 0, 
+    background_sd = 0,
+    barcode_num = 10,
+    barcode_noise = 1):
     """
     Generate a scramble dataset with replicate sequences drawn from the same parameters. 
     Wraps gen_rand_seq(), gen_emat_single_site(), create_scrambles_df(), sum_emat_df(), and gen_barcode_effects().

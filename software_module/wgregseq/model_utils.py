@@ -153,9 +153,7 @@ def sum_emat_df(scrambles_df, emat):
     scrambles_df['effect'] = np.nan
     
     for ind, scr_seq in enumerate(scrambles_df['sequence'], start = 0):
-        #print(ind)
-        #print(scr_seq)
-        scrambles_df.at[ind,'effect'] = wgregseq.sum_emat(seq = scr_seq, emat = emat)
+        scrambles_df.at[ind, 'effect'] = sum_emat(seq = scr_seq, emat = emat)
         
     return(scrambles_df)
 

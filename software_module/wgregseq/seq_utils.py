@@ -33,16 +33,18 @@ def gen_rand_seq(length, letters=['A','T','C','G']):
     """
     # Confirm argument types
     if type(letters) not in [list, np.ndarray, pd.core.series.Series]:
-        raise ValueError("`letters` has to be a list.")
+        raise TypeError("`letters` has to be a list-type.")
         
     if not isint(length):
-        raise ValueError("`length` has to be an integer.")
+        raise TypeError("`length` has to be an integer.")
+    elif length < 0:
+        raise ValueError("`length` has to be non-negative.")
     else:
         length = int(length)
             
     # Generate random sequence
     seq = ''.join(random.choice(letters) for i in range(length))
-    return(seq)
+    return seq
 
 
 def scramble(sequence, attempts, preserve_content=True):
@@ -332,7 +334,7 @@ def scan_enzymes(sequence_list, enzymes=[]):
     if type(enzymes) not in [list, np.ndarray, pd.core.series.Series]:
         raise TypeError("enzymes has to be list, numpy array or pandas series.")
     else:
-        if any([(not type(enz) == str) and (not type(enzyme).__bases__[-1] == Restriction.RestrictionType) for enz in enzymes]):
+        if any([(not type(enz) == str) and (not type(enz).__bases__[-1] == Restriction.RestrictionType) for enz in enzymes]):
             raise TypeError("entries in `enzymes` have to be of type string or Bio.RestrictionType")
             
     # Check inputs
@@ -402,37 +404,39 @@ def mutations_det(
     if alph_type not in ["DNA", "Numeric"]:
         raise ValueError("`alph_type` has to be either \"DNA\" or \"Numeric\" ")
         
-    if mut_per_seq > 2:
-        warnings.resetwarnings()
-        warnings.warn("For more than double mutants, you should select... .")
-        
-    # Compute number of possible mutations
-    poss_mutants = np.prod([3 * len(sequence) - i for i in range(mut_per_seq)])
     
+    # Get site to mutate
+    mutation_window = sequence[site_start:site_end]
+
+    # Compute number of possible mutations
+    poss_mutants = np.prod([3 * len(mutation_window) - i for i in range(mut_per_seq)])
+
+    if mut_per_seq > 3:
+        raise ("For more than triple mutants, you should select random .")
+
     if num_mutants == None:
         num_mutants = poss_mutants
     elif num_mutants > poss_mutants:
         warnings.resetwarnings()
         warnings.warn("Trying to create more unique mutants than possible. Choosing maximal number of {} mutants.".format(poss_mutants))
-    
+        num_mutants = poss_mutants
+    elif num_mutants/poss_mutants < 0.1:
+        warnings.resetwarnings()
+        warnings.warn("Sampling less than 10 percent of possible mutations. Consider generating mutations at random to save computational recources.")
+
     # Create list and choose wt as first
     mutants = np.empty(num_mutants+1, dtype='U{}'.format(len(sequence)))
     mutants[0] = sequence
-    mutant_indexes = create_mutant_index(sequence, num_mutants, mut_per_seq)
-    print(mutant_indexes)
+    mutant_indeces = create_mutant_index(mutation_window, num_mutants, mut_per_seq)
     if alph_type == "DNA":
-        
         letters = np.array(["A", "C", "G", "T"])
-        seq_dict, inv_dict = choose_dict("dna")
-        seq_list = list(sequence)
-        
-        
     elif alph_type == "Numeric":
         letters = np.arange(4)
-        mut_fun = mutate_sequence_numeric
     else:
         raise ValueError("Alphabet type has to be either \"DNA\" or \"Numeric\"")
     
+    for i, x in enumerate(mutant_indeces):
+        mutants[i+1] = sequence[0:site_start] + mutate_from_index(mutation_window, x, letters) + sequence[site_end:]
         
     return mutants
 
@@ -442,15 +446,15 @@ def create_mutant_index(sequence, num_mutants, mut_per_seq):
     """Create index for mutations."""
     mutants = []
     # Generate single mutants
-    for i in range(len(sequence)):
-        for j in range(3):
-            mutants.append((i, j))
-     
+    mutants = [(j, i) for i in range(3) for j in range(len(sequence))]
     if mut_per_seq > 1:
         somelists = mut_per_seq * [mutants]
         elements = np.array(list(itertools.product(*somelists)))
         mask = np.array([~(np.equal(*element)).all() for element in elements])
         mutants = elements[mask]
+    else:
+        mutants = [np.array([x]) for x in mutants]
+    
         
     if num_mutants < len(mutants * mut_per_seq):
         mutants_inds = np.random.choice(np.arange(len(mutants), dtype=int), num_mutants, replace=False)
@@ -459,9 +463,14 @@ def create_mutant_index(sequence, num_mutants, mut_per_seq):
             temp_mutants.append(mutants[index])
             
         mutants = temp_mutants
-        
     return mutants
-        
+
+
+def mutate_from_index(sequence, index, alph):
+    seq_list = list(sequence)
+    for loci, mutation in index:
+        seq_list[loci] = filter_mutation(alph, seq_list[loci])[mutation]
+    return "".join(seq_list)
 
 
 def _check_sequence_list(sequence_list):
@@ -477,12 +486,10 @@ def _check_sequence_list(sequence_list):
             
     return sequence_list
     
-    
 
 @numba.njit
 def filter_letter(x, letter):
     return x != letter
-
 
 
 @numba.njit

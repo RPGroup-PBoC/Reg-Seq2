@@ -7,4 +7,3 @@ logomaker
 matplotlib
 statsmodels
 seaborn
-mpl_toolkits

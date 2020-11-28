@@ -109,3 +109,4 @@ graphicspath.tex
 
 #Ignore files generated when installing package
 wgregseq.egg-info/
+data/.DS_Store

@@ -1,4 +1,4 @@
-from .gen_utils import choose_dict, seq2mat
+from .utils import choose_dict, seq2mat
 
 import numpy as np
 import pandas as pd

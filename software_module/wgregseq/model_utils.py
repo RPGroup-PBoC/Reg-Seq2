@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 from scipy import stats
 import statsmodels.api
-from .gen_utils import isint
-
+from .utils import isint
+import numba
 
 def gen_emat_rand(site_size, mean=1, sd=1):
     """
@@ -125,12 +125,37 @@ def sum_emat(seq, emat):
     sum : float
     """
     
-    mat_vals = []
+    mat_vals = np.zeros(len(emat.index))
     
     for ind,char in enumerate(seq, start = 0):
-        mat_vals.append(emat.iloc[ind][char])
+        mat_vals[ind] = (emat.iloc[ind][char])
         
-    return sum(mat_vals) 
+    return np.sum(mat_vals) 
+
+
+@numba.njit()
+def sum_emat_arr(seq, emat):
+    """
+    Retrieve and sum the energy matrix values for a given sequence variant and matrix.
+    Uses numba to speed up computation.
+    
+    Parameters
+    ----------
+    seq : string
+    
+    emat : numpy array with columns A C G T
+    
+    Returns
+    ---------
+    sum : float
+    """
+    
+    mat_vals = np.zeros(len(seq))
+    letter_to_int = {"A": 0, "C": 1, "G": 2, "T": 3}
+    for ind in range(len(seq)):
+        mat_vals[ind] = emat[ind, letter_to_int[seq[ind]]]
+        
+    return np.sum(mat_vals) 
 
 
 def sum_emat_df(scrambles_df, emat):
@@ -151,9 +176,10 @@ def sum_emat_df(scrambles_df, emat):
     """
     
     scrambles_df['effect'] = np.nan
+    emat_arr = emat[["A", "C", "G", "T"]].to_numpy()
     
     for ind, scr_seq in enumerate(scrambles_df['sequence'], start = 0):
-        scrambles_df.at[ind, 'effect'] = sum_emat(seq = scr_seq, emat = emat)
+        scrambles_df.at[ind, 'effect'] = sum_emat_arr(seq = scr_seq, emat = emat_arr)
         
     return(scrambles_df)
 

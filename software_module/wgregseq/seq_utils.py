@@ -4,11 +4,14 @@ import numpy as np
 import pandas as pd
 import copy
 import random
+import numba
+import itertools
+
 
 from Bio.Restriction import *
 from Bio.Seq import Seq
 
-from .gen_utils import isint
+from .utils import isint, choose_dict
 
 import warnings
 
@@ -354,71 +357,111 @@ def scan_enzymes(sequence_list, enzymes=[]):
         
     
     
-"""
-def site_single_mutations(sequence, site_start=0, site_end=-1, alph_type="DNA"):
+def mutations_det(
+    sequence, 
+    num_mutants=None, 
+    mut_per_seq=1, 
+    site_start=0, 
+    site_end=-1, 
+    alph_type="DNA"
+):
+    """Creates single or double mutants.
     
+    
+    Parameters
+    ----------
+    - sequence : string
+        DNA sequence that is going to be mutated.
+    - num_mutants : int, default None
+        Number of mutant sequences. If None, all possible mutatants are created.
+    - mut_per_seq : int, default 1
+        Number of mutations per sequence.
+    - site_start : int, default 0
+        Beginning of the site that is about to be mutated.
+    - site_end : int, default -1
+        End of the site that is about to be mutated.
+    - alph_type : string, default "DNA"
+        Can either be "DNA" for letter sequences, or "Numeric" for integer sequences.
+        
+    Returns
+    -------
+    """
+    
+    if not (isint(num_mutants) or num_mutants==None):
+        raise TypeError("`num_mutants is of type {} but has to be integer valued.".format(type(num_mutants)))
+        
+    if not isint(mut_per_seq):
+        raise TypeError("`mut_per_seq is of type {} but has to be integer valued.".format(type(mut_per_seq)))
+        
+    if not isint(site_start):
+        raise TypeError("`site_start is of type {} but has to be integer valued.".format(type(site_start)))
+        
+    if not isint(site_end):
+        raise TypeError("`site_end is of type {} but has to be integer valued.".format(type(site_end)))
+        
+    if alph_type not in ["DNA", "Numeric"]:
+        raise ValueError("`alph_type` has to be either \"DNA\" or \"Numeric\" ")
+        
+    if mut_per_seq > 2:
+        warnings.resetwarnings()
+        warnings.warn("For more than double mutants, you should select... .")
+        
+    # Compute number of possible mutations
+    poss_mutants = np.prod([3 * len(sequence) - i for i in range(mut_per_seq)])
+    
+    if num_mutants == None:
+        num_mutants = poss_mutants
+    elif num_mutants > poss_mutants:
+        warnings.resetwarnings()
+        warnings.warn("Trying to create more unique mutants than possible. Choosing maximal number of {} mutants.".format(poss_mutants))
+    
+    # Create list and choose wt as first
+    mutants = np.empty(num_mutants+1, dtype='U{}'.format(len(sequence)))
+    mutants[0] = sequence
+    mutant_indexes = create_mutant_index(sequence, num_mutants, mut_per_seq)
+    print(mutant_indexes)
     if alph_type == "DNA":
+        
         letters = np.array(["A", "C", "G", "T"])
-        scrambled_sequences = [sequence]
-    
-        for i in site_start:site_end
-            mutations = filter(x-> x[1] != sequence[i], letters)
-            for x in mutations
-                temp_sequence = collect(sequence)
-                temp_sequence[i] = x[1]
-                push!(scrambled_sequences, string(temp_sequence...))
-            end
-        end
-    elif alph_type == "Numeric"
-        letters = collect(1:4)
-        scrambled_sequences = [sequence]
-        for i in site_start:site_end
-            mutations = filter(x-> x[1] != sequence[i], letters)
-            for x in mutations
-                temp_sequence = deepcopy(sequence)
-                temp_sequence[i] = x[1]
-                push!(scrambled_sequences, temp_sequence)
-            end
-        end
+        seq_dict, inv_dict = choose_dict("dna")
+        seq_list = list(sequence)
+        
+        
+    elif alph_type == "Numeric":
+        letters = np.arange(4)
+        mut_fun = mutate_sequence_numeric
     else:
-        raise ValueError("Alphabet type has to be either \"DNA\" or \"Numbers\"")
+        raise ValueError("Alphabet type has to be either \"DNA\" or \"Numeric\"")
     
-    return scrambled_sequences
+        
+    return mutants
 
 
 
-function site_single_mutations(sequence; alph_type::String="DNA")
-    
-    if alph_type == "DNA"
-        letters = ["A", "C", "G", "T"]
-        scrambled_sequences = [sequence]
-    
-        for i in 1:length(sequence)
-            mutations = filter(x-> x[1] != sequence[i], letters)
-            for x in mutations
-                temp_sequence = collect(sequence)
-                temp_sequence[i] = x[1]
-                push!(scrambled_sequences, string(temp_sequence...))
-            end
-        end
-    elseif alph_type == "Numeric"
-        letters = collect(1:4)
-        scrambled_sequences = [sequence]
-        for i in 1:length(sequence)
-            mutations = filter(x-> x[1] != sequence[i], letters)
-            for x in mutations
-                temp_sequence = deepcopy(sequence)
-                temp_sequence[i] = x[1]
-                push!(scrambled_sequences, temp_sequence)
-            end
-        end
-    else
-        throw(ArgumentError("Alphabet type has to be either \"DNA\" or \"Numbers\""))
-    end
-    
-    return scrambled_sequences
-end
-"""
+def create_mutant_index(sequence, num_mutants, mut_per_seq):
+    """Create index for mutations."""
+    mutants = []
+    # Generate single mutants
+    for i in range(len(sequence)):
+        for j in range(3):
+            mutants.append((i, j))
+     
+    if mut_per_seq > 1:
+        somelists = mut_per_seq * [mutants]
+        elements = np.array(list(itertools.product(*somelists)))
+        mask = np.array([~(np.equal(*element)).all() for element in elements])
+        mutants = elements[mask]
+        
+    if num_mutants < len(mutants * mut_per_seq):
+        mutants_inds = np.random.choice(np.arange(len(mutants), dtype=int), num_mutants, replace=False)
+        temp_mutants = []
+        for index in mutants_inds:
+            temp_mutants.append(mutants[index])
+            
+        mutants = temp_mutants
+        
+    return mutants
+        
 
 
 def _check_sequence_list(sequence_list):
@@ -434,3 +477,24 @@ def _check_sequence_list(sequence_list):
             
     return sequence_list
     
+    
+
+@numba.njit
+def filter_letter(x, letter):
+    return x != letter
+
+
+
+@numba.njit
+def filter_mutation(alph, letter):
+    j = 0
+    for i in range(alph.size):
+        if filter_letter(alph[i], letter):
+            j += 1
+    result = np.empty(j, dtype=alph.dtype)
+    j = 0
+    for i in range(alph.size):
+        if filter_letter(alph[i], letter):
+            result[j] = alph[i]
+            j += 1
+    return result

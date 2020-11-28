@@ -1,0 +1,10 @@
+numpy
+pandas
+numba
+BioPython
+scipy
+logomaker
+matplotlib
+statsmodels
+seaborn
+mpl_toolkits

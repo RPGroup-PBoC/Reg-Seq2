@@ -7,9 +7,13 @@ import random
 import numba
 import itertools
 
+import pathlib
+
+
 
 from Bio.Restriction import *
 from Bio.Seq import Seq
+from Bio.SeqIO import parse
 
 from .utils import isint, choose_dict
 
@@ -390,16 +394,16 @@ def mutations_det(
     """
     
     if not (isint(num_mutants) or num_mutants==None):
-        raise TypeError("`num_mutants is of type {} but has to be integer valued.".format(type(num_mutants)))
+        raise TypeError("`num_mutants` is of type {} but has to be integer valued.".format(type(num_mutants)))
         
     if not isint(mut_per_seq):
-        raise TypeError("`mut_per_seq is of type {} but has to be integer valued.".format(type(mut_per_seq)))
+        raise TypeError("`mut_per_seq` is of type {} but has to be integer valued.".format(type(mut_per_seq)))
         
     if not isint(site_start):
-        raise TypeError("`site_start is of type {} but has to be integer valued.".format(type(site_start)))
+        raise TypeError("`site_start` is of type {} but has to be integer valued.".format(type(site_start)))
         
     if not isint(site_end):
-        raise TypeError("`site_end is of type {} but has to be integer valued.".format(type(site_end)))
+        raise TypeError("`site_end` is of type {} but has to be integer valued.".format(type(site_end)))
         
     if alph_type not in ["DNA", "Numeric"]:
         raise ValueError("`alph_type` has to be either \"DNA\" or \"Numeric\" ")
@@ -485,6 +489,68 @@ def _check_sequence_list(sequence_list):
             sequence_list[i] = Seq(seq)
             
     return sequence_list
+    
+
+def add_primers(sequence_list, primer_index, autocomplete=False, len_to_complete=200):
+    """Add a orthogonal primers to sequences and possibily add random positions up to certain length.
+    
+    Parameters
+    ----------
+    - sequence_list : list of sequences
+        List of sequences.
+    - primer_index : int
+        Index of the primer pair that is added to the sequences.
+    - autocomplete : boolean
+        If True, adds random base pairs to the end of the sequence until length matches `len_to_complete`.
+    - len_to_complete : int
+        Length of total sequence after primers are added.
+        
+    Returns
+    - new_seq_list : list of sequences
+        List of modified sequences with primer pairs.
+    
+    """
+    
+    # Check input
+    if type(sequence_list) not in [list, np.ndarray, pd.core.series.Series]:
+        raise TypeError("sequence_list has to be list, numpy array or pandas series.")
+    else:
+        if any([type(seq) not in [str, Seq] for seq in sequence_list]):
+            raise TypeError("entries in `sequence_list` have to be of type string or Bio.Seq.Seq.")
+            
+    if not isint(primer_index):
+        raise TypeError("`primer_index` is of type {} but has to be integer valued.".format(type(primer_index)))
+        
+    if not isint(len_to_complete):
+        raise TypeError("`len_to_complete` is of type {} but has to be integer valued.".format(type(len_to_complete)))
+    elif len_to_complete < 0:
+        raise ValueError("`len_to_complete` has to be non-negative.")
+        
+    if type(autocomplete) != bool:
+        raise TypeError("`len_to_complete` is of type {} but has to be boolean.".format(type(autocomplete)))
+        
+    # Import primers       
+    local_path = pathlib.Path(__file__).parent.absolute()
+    kosprimefwd = list(parse(str(local_path) + '/forward_finalprimers.fasta','fasta'))
+    kosprimerev = list(parse(str(local_path) + '/reverse_finalprimers.fasta','fasta'))
+    
+    # Extract primers that is added
+    forward = str(kosprimefwd[primer_index].seq)
+    reverse = str(kosprimerev[primer_index].seq)
+    
+    # Copy sequence_list to not override input
+    new_seq_list = copy.deepcopy(sequence_list)
+    
+    # Add primers to sequences and autocomplete if chosen to
+    for i, seq in enumerate(sequence_list):
+        new_seq_list[i] = forward+seq+reverse
+        if autocomplete and len(sequence_list[i]) < len_to_complete:
+            new_seq_list[i] = new_seq_list[i] + gen_rand_seq(len_to_complete - len(new_seq_list[i]))
+        elif len(new_seq_list[i]) > len_to_complete:
+            warnings.resetwarnings()
+            warnings.warn("Sequence {} is longer than {}bp.".format(i, len_to_complete))
+      
+    return new_seq_list
     
 
 @numba.njit

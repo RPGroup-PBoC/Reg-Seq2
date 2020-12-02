@@ -184,7 +184,7 @@ def create_scrambles(
     for i in range(int(n_scrambles)):
         temp_sequence = list(sequence)
         for j in range(number):
-            temp_sequence[indices(i)] = scramble(sequence[indices(i)], attempts, preserve_content=True)
+            temp_sequence[indices(i)] = scramble(sequence[indices(i)], attempts, preserve_content=True).lower()
             scrambled_sequences[i * number + j + 1] = "".join(temp_sequence)
     
     return scrambled_sequences

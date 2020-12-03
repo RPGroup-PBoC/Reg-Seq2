@@ -20,36 +20,6 @@ from .utils import isint, choose_dict
 import warnings
 
 
-def gen_rand_seq(length, letters=['A','T','C','G']):
-    """
-    Generate a random DNA sequence of defined length
-    
-    Parameters
-    ----------
-    length : int
-        Length of generated sequence
-    letters : list
-        List of letters to choose from when generating the sequence.
-    Returns
-    ---------
-    seq : string
-         Random sequence
-    """
-    # Confirm argument types
-    if type(letters) not in [list, np.ndarray, pd.core.series.Series]:
-        raise TypeError("`letters` has to be a list-type.")
-        
-    if not isint(length):
-        raise TypeError("`length` has to be an integer.")
-    elif length < 0:
-        raise ValueError("`length` has to be non-negative.")
-    else:
-        length = int(length)
-            
-    # Generate random sequence
-    seq = ''.join(random.choice(letters) for i in range(length))
-    return seq
-
 def find_seq(TSS, strand, up, dn, genome):
     '''
     Find sequence upstream and downstream of TSS. If gene is reverse 
@@ -79,7 +49,7 @@ def find_seq(TSS, strand, up, dn, genome):
         gene = genome[TSS-dn:TSS+up]
         
         tempgene = Seq(gene)
-        outgene = str(tempgene.reverse_complement())
+        outgene = tempgene.reverse_complement()
         
         left_pos = TSS-dn
         right_pos = TSS+up
@@ -91,6 +61,7 @@ def find_seq(TSS, strand, up, dn, genome):
         right_pos = TSS+dn
         
     return (outgene, left_pos, right_pos)
+
 
 def find_seq_df(row, TSS_col, strand_col, up, dn, genome):
     '''
@@ -124,7 +95,38 @@ def find_seq_df(row, TSS_col, strand_col, up, dn, genome):
     strand = row[strand_col]
  
     return find_seq(TSS, strand, up, dn, genome)
+
+
+def gen_rand_seq(length, letters=['A','T','C','G']):
+    """
+    Generate a random DNA sequence of defined length
     
+    Parameters
+    ----------
+    length : int
+        Length of generated sequence
+    letters : list
+        List of letters to choose from when generating the sequence.
+    Returns
+    ---------
+    seq : string
+         Random sequence
+    """
+    # Confirm argument types
+    if type(letters) not in [list, np.ndarray, pd.core.series.Series]:
+        raise TypeError("`letters` has to be a list-type.")
+        
+    if not isint(length):
+        raise TypeError("`length` has to be an integer.")
+    elif length < 0:
+        raise ValueError("`length` has to be non-negative.")
+    else:
+        length = int(length)
+            
+    # Generate random sequence
+    seq = ''.join(random.choice(letters) for i in range(length))
+    return seq
+
 
 def scramble(sequence, attempts, preserve_content=True):
     """
@@ -250,6 +252,7 @@ def create_scrambles(
     
     # Create array to store sequences and add wild type
     scrambled_sequences = np.empty(number * int(n_scrambles) + 1, dtype='<U160')
+
     scrambled_sequences[0] = sequence
     
     # Function to find right indices for scrambles
@@ -363,6 +366,7 @@ def create_scrambles_df(
     
     return scramble_df
 
+
 def create_scrambles_df_2(df, windowsize, overlap, attempts, number=1, 
                           preserve_content=True, ignore_imperfect_scrambling=False):
     """
@@ -396,7 +400,7 @@ def create_scrambles_df_2(df, windowsize, overlap, attempts, number=1,
     df_results = pd.DataFrame()
     
     for i,row in df.iterrows():
-        wt_seq = row['wt_sequence']
+        wt_seq = str(row['wt_sequence'])
     
         df_tmp = create_scrambles_df(wt_seq, windowsize, overlap, attempts, number, 
                                                     preserve_content, ignore_imperfect_scrambling)
@@ -409,11 +413,6 @@ def create_scrambles_df_2(df, windowsize, overlap, attempts, number=1,
     return df_results
 
 
-rest_sites = {
-    
-}
-
-
 def find_restriction_sites(enzyme, sequence_list):
     """Searches for restriction sites of a specific enzyme in a list of sequences
     
@@ -424,7 +423,6 @@ def find_restriction_sites(enzyme, sequence_list):
     sequence_list: array-type
         
     """
-    
     
     if type(enzyme) == str:
         try:
@@ -460,12 +458,15 @@ def scan_enzymes(sequence_list, enzymes=[]):
     else:
         if any([(not type(enz) == str) and (not type(enz).__bases__[-1] == Restriction.RestrictionType) for enz in enzymes]):
             raise TypeError("entries in `enzymes` have to be of type string or Bio.RestrictionType")
-            
+    
     # Check inputs
+    if type(sequence_list) == pd.core.series.Series:
+        sequence_list = copy.deepcopy(sequence_list.values)
     sequence_list = _check_sequence_list(sequence_list)
     
     # Return list of enzymes if none given
     ret_list = False
+    
     # Choose all commercially available enzymes if none given
     if len(enzymes) == 0:
         enzymes = CommOnly
@@ -593,8 +594,76 @@ def create_mutant_index(sequence, num_mutants, mut_per_seq):
 def mutate_from_index(sequence, index, alph):
     seq_list = list(sequence)
     for loci, mutation in index:
-        seq_list[loci] = filter_mutation(alph, seq_list[loci])[mutation]
+        seq_list[loci] = filter_mutation(alph, seq_list[loci])[mutation].lower()
     return "".join(seq_list)
+
+
+def mutations_rand(
+    sequence, 
+    num_mutants,
+    rate,
+    site_start=0, 
+    site_end=-1, 
+    alph_type="DNA"
+):
+    """Creates single or double mutants.
+    
+    
+    Parameters
+    ----------
+    - sequence : string
+        DNA sequence that is going to be mutated.
+    - num_mutants : int, default None
+        Number of mutant sequences. If None, all possible mutatants are created.
+    - mut_per_seq : int, default 1
+        Number of mutations per sequence.
+    - site_start : int, default 0
+        Beginning of the site that is about to be mutated.
+    - site_end : int, default -1
+        End of the site that is about to be mutated.
+    - alph_type : string, default "DNA"
+        Can either be "DNA" for letter sequences, or "Numeric" for integer sequences.
+        
+    Returns
+    -------
+    """
+    
+    if not (isint(num_mutants) or num_mutants==None):
+        raise TypeError("`num_mutants` is of type {} but has to be integer valued.".format(type(num_mutants)))
+    
+    if not type(rate) == float:
+        raise TypeError("`rate` is of type {} but has to be a float.".format(type(rate)))
+        
+    if not isint(site_start):
+        raise TypeError("`site_start` is of type {} but has to be integer valued.".format(type(site_start)))
+        
+    if not isint(site_end):
+        raise TypeError("`site_end` is of type {} but has to be integer valued.".format(type(site_end)))
+        
+    if alph_type not in ["DNA", "Numeric"]:
+        raise ValueError("`alph_type` has to be either \"DNA\" or \"Numeric\" ")
+        
+    
+    # Get site to mutate
+    mutation_window = sequence[site_start:site_end]
+
+    
+    # Create list and choose wt as first
+    mutants = np.empty(num_mutants+1, dtype='U{}'.format(len(sequence)))
+    mutants[0] = sequence
+    mutant_indeces = random_mutation_generator(mutation_window, rate, num_mutants)
+    if alph_type == "DNA":
+        letters = np.array(["A", "C", "G", "T"])
+    elif alph_type == "Numeric":
+        letters = np.arange(4)
+    else:
+        raise ValueError("Alphabet type has to be either \"DNA\" or \"Numeric\"")
+    
+    for i, x in enumerate(mutant_indeces):
+        mutants[i+1] = sequence[0:site_start] + mutate_from_index(mutation_window, x, letters) + sequence[site_end:]
+        
+    return mutants
+
 
 
 def _check_sequence_list(sequence_list):
@@ -671,6 +740,22 @@ def add_primers(sequence_list, primer_index, autocomplete=False, len_to_complete
             warnings.warn("Sequence {} is longer than {}bp.".format(i, len_to_complete))
       
     return new_seq_list
+
+
+
+def random_mutation_generator(sequence, rate, num_mutants):
+    mutant_list = np.empty(num_mutants, dtype=object)
+    for i in range(num_mutants):
+        mutant_list[i] = _random_mutation_generator(sequence, rate)
+    
+    return mutant_list
+    
+@numba.njit
+def _random_mutation_generator(sequence, rate):
+    num_mutations = np.random.poisson(len(sequence) * rate)
+    positions = np.random.choice(np.arange(len(sequence)), num_mutations)
+    mutants = np.random.choice(np.arange(3), num_mutations)
+    return  [(x, y) for (x, y) in zip(positions, mutants)]
     
 
 @numba.njit

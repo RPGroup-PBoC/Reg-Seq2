@@ -50,6 +50,81 @@ def gen_rand_seq(length, letters=['A','T','C','G']):
     seq = ''.join(random.choice(letters) for i in range(length))
     return seq
 
+def find_seq(TSS, strand, up, dn, genome):
+    '''
+    Find sequence upstream and downstream of TSS. If gene is reverse 
+    transcribed, return reverse complement of sequence.
+    
+    Parameters
+    ----------
+    TSS : int
+        Transcription start site. Refers to position in the genome.
+    strand : string
+        Either '+' for fwd strand or '-' for reverse strand.
+    up : int
+        Number of basepairs upstream of TSS to grab. Relative to TSS according to strand / direction.
+    dn : int
+        Number of basepairs downstream of TSS to grab. Relative to TSS according to strand / direction.
+    genome : string
+        Reference genome as a string 
+        
+    Returns
+    -------
+    output : string
+        Genetic sequence upstream and downstream of TSS
+    ''' 
+        
+    if strand == '-':
+        
+        gene = genome[TSS-dn:TSS+up]
+        
+        tempgene = Seq(gene)
+        outgene = str(tempgene.reverse_complement())
+        
+        left_pos = TSS-dn
+        right_pos = TSS+up
+        
+    elif strand == '+':
+        outgene = genome[TSS-up:TSS+dn]
+        
+        left_pos = TSS-up
+        right_pos = TSS+dn
+        
+    return (outgene, left_pos, right_pos)
+
+def find_seq_df(row, TSS_col, strand_col, up, dn, genome):
+    '''
+    Find sequence upstream and downstream of TSS. If gene is reverse 
+    transcribed, return reverse complement of sequence. Modified to be applied on a dataframe of many TSS and associated strands.
+    
+    Parameters
+    ----------
+    row : pandas dataframe row
+        This row in a pandas dataframe will have columns TSS_col and strand_col. see find_seq()
+    TSS_col : string
+        The column in the dataframe that contains the TSS position. TSS values are ints.
+    strand_col : string
+        The column in the dataframe that contains the strand direction. Strand values are either '+' for fwd strand or '-' for reverse strand.
+    up : int
+        Number of basepairs upstream of TSS to grab. Relative to TSS according to strand / direction.
+    dn : int
+        Number of basepairs downstream of TSS to grab. Relative to TSS according to strand / direction.
+    genome : string
+        Reference genome as a string 
+        
+    Returns
+    -------
+    output : string
+        Genetic sequence upstream and downstream of TSS
+        
+    example : df[['sequence','left_pos','right_pos']] = df.apply(find_seq_df, axis = 1, 
+                                                        args = ('TSS_position','direction',115,45, genome), result_type = 'expand')
+    '''
+    TSS = row[TSS_col]
+    strand = row[strand_col]
+ 
+    return find_seq(TSS, strand, up, dn, genome)
+    
 
 def scramble(sequence, attempts, preserve_content=True):
     """
@@ -287,6 +362,51 @@ def create_scrambles_df(
     scramble_df['center_pos'] = scramble_df[['start_pos','stop_pos']].mean(axis = 1)
     
     return scramble_df
+
+def create_scrambles_df_2(df, windowsize, overlap, attempts, number=1, 
+                          preserve_content=True, ignore_imperfect_scrambling=False):
+    """
+    Function to apply create_scrambles_df to a dataframe of wt sequences.
+    
+    Parameters
+    ----------
+    df : pd.DataFrame
+        Should contain columns 'wt_sequence', 'promoter', 'TSS', and 'direction', with the appropriate data.
+    windowsize : int
+        Size of the window within letters are scrambled. Passed to create_scramble_df.
+    overlap : int
+        Number of letters that each window overlaps with the neighbors. Passed to create_scramble_df.
+    attempts : int
+        Number of scrambles which are created. Most dissimilar one is chosen. Passed to create_scramble_df.
+    number : int
+        Number of scrambles per window. Passed to create_scramble_df.
+    preserve_content : bool, default True
+        If True, shuffles the existing sequence. If False, a completely arbitrary sequence is created. Passed to create_scramble_df.
+    ignore_imperfect_scrambling : bool, default False 
+        If False, returns an error when scrambles are not created evenly (last scramble does not end at
+        sequence end). Passed to create_scramble_df.
+        
+    Returns
+    -------
+    df_results : pd.DataFrame
+        DataFrame of scrambled sequences for many different WT sequences.
+    """
+    
+    df_tmp = pd.DataFrame()
+    df_results = pd.DataFrame()
+    
+    for i,row in df.iterrows():
+        wt_seq = row['wt_sequence']
+    
+        df_tmp = create_scrambles_df(wt_seq, windowsize, overlap, attempts, number, 
+                                                    preserve_content, ignore_imperfect_scrambling)
+        
+        df_tmp['promoter'],df_tmp['TSS'],df_tmp['direction'] = row['promoter'],row['TSS'],row['direction']
+        
+    
+        df_results = pd.concat([df_results,df_tmp])
+    
+    return df_results
 
 
 rest_sites = {

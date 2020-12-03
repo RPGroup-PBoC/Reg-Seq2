@@ -1,0 +1,12 @@
+﻿promoter,TSS,direction,transcription_unit,binding_site_annotations
+metAp1,4214233,+,metA,MetJ-S-adenosylmethionine DNA-binding-site 20.5 bases downstream of metAp1 // MetJ-S-adenosylmethionine DNA-binding-site 4.5 bases downstream of metAp1
+tyrBp,4267082,+,tyrB,TyrR-tyr DNA-binding-site 42.5 bases downstream of tyrBp // TyrR-tyr DNA-binding-site 19.5 bases downstream of tyrBp
+alaCp,2498399,-,alaC,SgrR DNA-binding-site 167.5 bases upstream of alaCp
+argCp,4154885,+,argCBH,ArgR-arg DNA-binding-site 6.5 bases upstream of argEp1 // ArgR-arg DNA-binding-site 16.5 bases downstream of argEp1
+asnAp,3927129,+,asnA,AsnC DNA-binding-site 85.5 bases upstream of asnCp // AsnC DNA-binding-site 54.5 bases upstream of asnCp // AsnC DNA-binding-site 22.5 bases upstream of asnCp // AsnC DNA-binding-site 12.5 bases downstream of asnCp
+cysKp1,2532377,+,cysK,CysB DNA-binding-site 79 bases upstream of cysKp1
+dapBp1,28343,+,dapB,ArgP DNA-binding-site 61.5 bases upstream of dapBp1 // ArgP DNA-binding-site 81.5 bases upstream of dapBp1
+glyAp,2685574,-,glyA,PurR-hypoxanthine DNA-binding-site 59.5 bases upstream of glyAp // MetR-L-homocysteine DNA-binding-site 121 bases upstream of glyAp // MetR DNA-binding-site 80 bases upstream of hmpp
+iscRp,2662199,-,iscRSUA,DNA-binding transcriptional dual regulator IscR DNA-binding-site 28 bases upstream of iscRp // DNA-binding transcriptional dual regulator IscR DNA-binding-site 53 bases upstream of iscRp
+serCp,957595,+,serC,CRP-cAMP DNA-binding transcriptional dual regulator DNA-binding-site 86 bases upstream of serCp // Lrp DNA-binding-site 134 bases upstream of serCp
+trpLp,1323108,-,trpL,TrpR-trp DNA-binding-site 11.5 bases upstream of trpLp // TrpR-trp DNA-binding-site 3.5 bases upstream of trpLp // TrpR-trp DNA-binding-site 19.5 bases upstream of trpLp

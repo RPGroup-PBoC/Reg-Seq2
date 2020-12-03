@@ -49,7 +49,7 @@ def find_seq(TSS, strand, up, dn, genome):
         gene = genome[TSS-dn:TSS+up]
         
         tempgene = Seq(gene)
-        outgene = tempgene.reverse_complement()
+        outgene = str(tempgene.reverse_complement())
         
         left_pos = TSS-dn
         right_pos = TSS+up

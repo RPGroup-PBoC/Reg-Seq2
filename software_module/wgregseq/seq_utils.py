@@ -160,7 +160,7 @@ def scramble(sequence, attempts, preserve_content=True):
         if preserve_content:
             snip = "".join(random.sample(sequence, len(sequence)))
         else:
-            snip = "".join(random.choices(["A", "C", "T", "G"], len(sequence)))
+            snip = "".join(np.random.choice(["A", "C", "T", "G"], len(sequence)))
             
         scrambles[i] = snip
     
@@ -180,7 +180,9 @@ def create_scrambles(
     attempts,
     number=1,
     preserve_content=True, 
-    ignore_imperfect_scrambling=False):
+    ignore_imperfect_scrambling=False,
+    check_enzymes=[]
+):
     """
     Scramble letters in a window of given sequence. 
     
@@ -255,6 +257,10 @@ def create_scrambles(
 
     scrambled_sequences[0] = sequence
     
+    # Check for restriction sites in wild type
+    if len(check_enzymes) > 0:
+        background_sites = scan_enzymes([sequence], enzymes=check_enzymes)
+    
     # Function to find right indices for scrambles
     indices = lambda i: slice((windowsize-overlap) * i, (windowsize-overlap) * i + windowsize)
     
@@ -262,7 +268,15 @@ def create_scrambles(
     for i in range(int(n_scrambles)):
         temp_sequence = list(sequence)
         for j in range(number):
-            temp_sequence[indices(i)] = scramble(sequence[indices(i)], attempts, preserve_content=True).lower()
+            enzyme_check = True
+            while enzyme_check:
+                sc = scramble(sequence[indices(i)], attempts, preserve_content=preserve_content)
+                temp_sequence[indices(i)] = sc.lower()
+                if len(check_enzymes) > 0:
+                    if sum(scan_enzymes(["".join(temp_sequence)], enzymes=check_enzymes)) == sum(background_sites):
+                        enzyme_check = False
+                else:
+                    enzyme_check = False
             scrambled_sequences[i * number + j + 1] = "".join(temp_sequence)
     
     return scrambled_sequences
@@ -276,7 +290,9 @@ def create_scrambles_df(
     attempts,
     number=1,
     preserve_content=True, 
-    ignore_imperfect_scrambling=False):
+    ignore_imperfect_scrambling=False,
+    check_enzymes=[]
+):
     """
     Scramble letters in a window of given sequence. Returns pandas df with metadata.
     
@@ -297,6 +313,8 @@ def create_scrambles_df(
     ignore_imperfect_scrambling : bool, default False 
         If False, returns an error when scrambles are not created evenly (last scramble does not end at
         sequence end).
+    check_enzymes : list
+        List of enzymes for which restriction sites the scrambles are checked for.
         
     Returns
     -------
@@ -337,7 +355,9 @@ def create_scrambles_df(
         attempts,
         number,
         preserve_content,
-        ignore_imperfect_scrambling)
+        ignore_imperfect_scrambling,
+        check_enzymes
+    )
     
     # Read wild type sequence
     wild_type = scrambled_sequences[0]
@@ -367,8 +387,16 @@ def create_scrambles_df(
     return scramble_df
 
 
-def create_scrambles_df_2(df, windowsize, overlap, attempts, number=1, 
-                          preserve_content=True, ignore_imperfect_scrambling=False):
+def create_scrambles_df_2(
+    df, 
+    windowsize, 
+    overlap, 
+    attempts, 
+    number=1, 
+    preserve_content=True, 
+    ignore_imperfect_scrambling=False,
+    check_enzymes=[]
+):
     """
     Function to apply create_scrambles_df to a dataframe of wt sequences.
     
@@ -389,7 +417,8 @@ def create_scrambles_df_2(df, windowsize, overlap, attempts, number=1,
     ignore_imperfect_scrambling : bool, default False 
         If False, returns an error when scrambles are not created evenly (last scramble does not end at
         sequence end). Passed to create_scramble_df.
-        
+    check_enzymes : list
+        List of enzymes for which restriction sites the scrambles are checked for.
     Returns
     -------
     df_results : pd.DataFrame
@@ -402,8 +431,15 @@ def create_scrambles_df_2(df, windowsize, overlap, attempts, number=1,
     for i,row in df.iterrows():
         wt_seq = str(row['wt_sequence'])
     
-        df_tmp = create_scrambles_df(wt_seq, windowsize, overlap, attempts, number, 
-                                                    preserve_content, ignore_imperfect_scrambling)
+        df_tmp = create_scrambles_df(wt_seq, 
+                                     windowsize, 
+                                     overlap, 
+                                     attempts, 
+                                     number, 
+                                     preserve_content, 
+                                     ignore_imperfect_scrambling,
+                                     check_enzymes
+                                    )
         
         df_tmp['promoter'],df_tmp['TSS'],df_tmp['direction'] = row['promoter'],row['TSS'],row['direction']
         

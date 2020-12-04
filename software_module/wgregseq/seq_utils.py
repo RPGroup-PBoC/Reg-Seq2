@@ -612,7 +612,25 @@ def mutations_det(
 
 
 def create_mutant_index(sequence, num_mutants, mut_per_seq):
-    """Create index for mutations."""
+    """Create index for mutations. Each index is a tuple of a position in the
+    sequence and an integer from 0 to 2 that resembles the base (excluding wild type
+    base) for the mutation.
+    
+    Parameters
+    ----------
+    - sequence : string
+        Wildtype sequence
+    - num_mutants: int
+        Number of mutations.
+    - mut_per_seq : int
+        Number of mutations per mutant sequence
+        
+    Returns
+    -------
+    - mutants : list of arrays of tuples
+        List of mutations for each sequence.
+        
+    """
     mutants = []
     # Generate single mutants
     mutants = [(j, i) for i in range(3) for j in range(len(sequence))]
@@ -639,6 +657,23 @@ def create_mutant_index(sequence, num_mutants, mut_per_seq):
 
 
 def mutate_from_index(sequence, index, alph):
+    """Generate mutated sequence from wild type sequence given a an index and 
+    an alphabet.
+    
+    Parameters
+    ----------
+    - sequence : string
+        Wild type seqence
+    - index : array of tuples
+        Each tuple is a position and the mutation at that position.
+    - alph : array 
+        Alphabet to pick mutation from
+        
+    Returns
+    -------
+    - str
+        Sequence including mutation
+    """
     seq_list = list(sequence)
     for loci, mutation in index:
         seq_list[loci] = filter_mutation(alph, seq_list[loci])[mutation].lower()

@@ -575,8 +575,7 @@ def mutations_det(
         mutation_window = sequence[site_start:site_end]
 
     # Compute number of possible mutations
-    poss_mutants = np.prod([3 * len(mutation_window) - i for i in range(mut_per_seq)])
-
+    poss_mutants = np.prod([3 * (len(mutation_window) - i) for i in range(mut_per_seq)])
 
     if num_mutants == None:
         num_mutants = poss_mutants
@@ -621,7 +620,9 @@ def create_mutant_index(sequence, num_mutants, mut_per_seq):
         somelists = mut_per_seq * [mutants]
         elements = np.array(list(itertools.product(*somelists)))
         
-        mask = np.array([~(np.equal(*element)).all() for element in elements])
+        mask = np.empty(len(elements), dtype=bool)
+        for i, element in enumerate(elements):
+            mask[i] = len(np.unique([el[0] for el in element])) == 2
         mutants = elements[mask]
     else:
         mutants = [np.array([x]) for x in mutants]

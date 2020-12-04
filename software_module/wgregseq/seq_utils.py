@@ -637,10 +637,9 @@ def create_mutant_index(sequence, num_mutants, mut_per_seq):
     if mut_per_seq > 1:
         somelists = mut_per_seq * [mutants]
         elements = np.array(list(itertools.product(*somelists)))
-        
         mask = np.empty(len(elements), dtype=bool)
         for i, element in enumerate(elements):
-            mask[i] = len(np.unique([el[0] for el in element])) == 2
+            mask[i] = len(np.unique([el[0] for el in element])) == mut_per_seq
         mutants = elements[mask]
     else:
         mutants = [np.array([x]) for x in mutants]

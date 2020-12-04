@@ -525,8 +525,9 @@ def mutations_det(
     num_mutants=None, 
     mut_per_seq=1, 
     site_start=0, 
-    site_end=-1, 
-    alph_type="DNA"
+    site_end=None, 
+    alph_type="DNA",
+    keep_wildtype=False
 ):
     """Creates single or double mutants.
     
@@ -545,12 +546,13 @@ def mutations_det(
         End of the site that is about to be mutated.
     - alph_type : string, default "DNA"
         Can either be "DNA" for letter sequences, or "Numeric" for integer sequences.
-        
+    - keep_wildtype : bool, default False
+        If True, adds wild type sequence as first sequence in the list.
     Returns
     -------
     """
     
-    if not (isint(num_mutants) or num_mutants==None):
+    if not (isint(num_mutants) or num_mutants == None):
         raise TypeError("`num_mutants` is of type {} but has to be integer valued.".format(type(num_mutants)))
         
     if not isint(mut_per_seq):
@@ -559,7 +561,7 @@ def mutations_det(
     if not isint(site_start):
         raise TypeError("`site_start` is of type {} but has to be integer valued.".format(type(site_start)))
         
-    if not isint(site_end):
+    if not (isint(site_end) or site_end == None):
         raise TypeError("`site_end` is of type {} but has to be integer valued.".format(type(site_end)))
         
     if alph_type not in ["DNA", "Numeric"]:
@@ -567,13 +569,14 @@ def mutations_det(
         
     
     # Get site to mutate
-    mutation_window = sequence[site_start:site_end]
+    if site_end==None:
+        mutation_window = sequence[site_start:]
+    else:
+        mutation_window = sequence[site_start:site_end]
 
     # Compute number of possible mutations
     poss_mutants = np.prod([3 * len(mutation_window) - i for i in range(mut_per_seq)])
 
-    if mut_per_seq > 3:
-        raise ("For more than triple mutants, you should select random .")
 
     if num_mutants == None:
         num_mutants = poss_mutants
@@ -585,9 +588,15 @@ def mutations_det(
         warnings.resetwarnings()
         warnings.warn("Sampling less than 10 percent of possible mutations. Consider generating mutations at random to save computational recources.")
 
-    # Create list and choose wt as first
-    mutants = np.empty(num_mutants+1, dtype='U{}'.format(len(sequence)))
-    mutants[0] = sequence
+    # Create list 
+    if keep_wildtype:
+        mutants = np.empty(num_mutants+1, dtype='U{}'.format(len(sequence)))
+        mutants[0] = sequence
+        i_0 = 1
+    else:
+        mutants = np.empty(num_mutants, dtype='U{}'.format(len(sequence)))
+        i_0 = 0
+        
     mutant_indeces = create_mutant_index(mutation_window, num_mutants, mut_per_seq)
     if alph_type == "DNA":
         letters = np.array(["A", "C", "G", "T"])
@@ -597,7 +606,7 @@ def mutations_det(
         raise ValueError("Alphabet type has to be either \"DNA\" or \"Numeric\"")
     
     for i, x in enumerate(mutant_indeces):
-        mutants[i+1] = sequence[0:site_start] + mutate_from_index(mutation_window, x, letters) + sequence[site_end:]
+        mutants[i + i_0] = sequence[0:site_start] + mutate_from_index(mutation_window, x, letters) + sequence[site_end:]
         
     return mutants
 
@@ -611,6 +620,7 @@ def create_mutant_index(sequence, num_mutants, mut_per_seq):
     if mut_per_seq > 1:
         somelists = mut_per_seq * [mutants]
         elements = np.array(list(itertools.product(*somelists)))
+        
         mask = np.array([~(np.equal(*element)).all() for element in elements])
         mutants = elements[mask]
     else:
@@ -639,8 +649,10 @@ def mutations_rand(
     num_mutants,
     rate,
     site_start=0, 
-    site_end=-1, 
-    alph_type="DNA"
+    site_end=None, 
+    alph_type="DNA",
+    number_fixed=False,
+    keep_wildtype=False
 ):
     """Creates single or double mutants.
     
@@ -659,12 +671,15 @@ def mutations_rand(
         End of the site that is about to be mutated.
     - alph_type : string, default "DNA"
         Can either be "DNA" for letter sequences, or "Numeric" for integer sequences.
-        
+    - number_fixed : bool
+        If True, the number of mutations is fixed as the rate times length of the sequence.
+    - keep_wildtype : bool, default False
+        If True, adds wild type sequence as first sequence in the list.
     Returns
     -------
     """
     
-    if not (isint(num_mutants) or num_mutants==None):
+    if not (isint(num_mutants) or num_mutants == None):
         raise TypeError("`num_mutants` is of type {} but has to be integer valued.".format(type(num_mutants)))
     
     if not type(rate) == float:
@@ -673,7 +688,7 @@ def mutations_rand(
     if not isint(site_start):
         raise TypeError("`site_start` is of type {} but has to be integer valued.".format(type(site_start)))
         
-    if not isint(site_end):
+    if not (isint(site_end) or site_end == None):
         raise TypeError("`site_end` is of type {} but has to be integer valued.".format(type(site_end)))
         
     if alph_type not in ["DNA", "Numeric"]:
@@ -681,13 +696,23 @@ def mutations_rand(
         
     
     # Get site to mutate
-    mutation_window = sequence[site_start:site_end]
+    
+    if site_end==None:
+        mutation_window = sequence[site_start:]
+    else:
+        mutation_window = sequence[site_start:site_end]
 
     
-    # Create list and choose wt as first
-    mutants = np.empty(num_mutants+1, dtype='U{}'.format(len(sequence)))
-    mutants[0] = sequence
-    mutant_indeces = random_mutation_generator(mutation_window, rate, num_mutants)
+    # Create list
+    if keep_wildtype:
+        mutants = np.empty(num_mutants+1, dtype='U{}'.format(len(sequence)))
+        mutants[0] = sequence
+        i_0 = 1
+    else:
+        mutants = np.empty(num_mutants, dtype='U{}'.format(len(sequence)))
+        i_0 = 0
+        
+    mutant_indeces = random_mutation_generator(mutation_window, rate, num_mutants, number_fixed)
     if alph_type == "DNA":
         letters = np.array(["A", "C", "G", "T"])
     elif alph_type == "Numeric":
@@ -696,7 +721,7 @@ def mutations_rand(
         raise ValueError("Alphabet type has to be either \"DNA\" or \"Numeric\"")
     
     for i, x in enumerate(mutant_indeces):
-        mutants[i+1] = sequence[0:site_start] + mutate_from_index(mutation_window, x, letters) + sequence[site_end:]
+        mutants[i + i_0] = sequence[0:site_start] + mutate_from_index(mutation_window, x, letters) + sequence[site_end:]
         
     return mutants
 
@@ -779,16 +804,19 @@ def add_primers(sequence_list, primer_index, autocomplete=False, len_to_complete
 
 
 
-def random_mutation_generator(sequence, rate, num_mutants):
+def random_mutation_generator(sequence, rate, num_mutants, number_fixed):
     mutant_list = np.empty(num_mutants, dtype=object)
     for i in range(num_mutants):
-        mutant_list[i] = _random_mutation_generator(sequence, rate)
+        mutant_list[i] = _random_mutation_generator(sequence, rate, number_fixed)
     
     return mutant_list
     
 @numba.njit
-def _random_mutation_generator(sequence, rate):
-    num_mutations = np.random.poisson(len(sequence) * rate)
+def _random_mutation_generator(sequence, rate, number_fixed):
+    if number_fixed:
+        num_mutations = int(rate*len(sequence))
+    else:
+        num_mutations = np.random.poisson(len(sequence) * rate)
     positions = np.random.choice(np.arange(len(sequence)), num_mutations)
     mutants = np.random.choice(np.arange(3), num_mutations)
     return  [(x, y) for (x, y) in zip(positions, mutants)]

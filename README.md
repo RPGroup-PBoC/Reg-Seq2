@@ -24,11 +24,8 @@ Files that may not be code, but are important for reproducibility of your findin
 * **`materials`**: Information regarding the materials used in your experiments or data generation. This could include manufacturer information, records of purity, and/or lot and catalog numbers.
 * **`software details`**: Information about your computational environment that are necessary for others to execute your code. This includes details about your operating system, software version and required packages.
 
-### **`tests`**
-All test suites for your code. *Any custom code you've written should be thoroughly and adequately tested to make sure you know how it is working.*
-
 ### **`software_module`**
-Contains a python module. Installed by navigating into this folder in the command line and using `pip install -e .`. Necessary to run most of the code used in the `code` folder.
+Contains a python module. Installed by navigating into this folder in the command line and using `pip install -e .`. Necessary to run most of the code used in the `code` folder. 
 
 ### **`templates`**
 Files that serve as blank templates that document the procedures taken for each experiment, simulation, or analysis routine.

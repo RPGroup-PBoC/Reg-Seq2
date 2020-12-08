@@ -7,6 +7,8 @@ import random
 import numba
 import itertools
 
+from scipy.special import factorial
+
 import pathlib
 
 
@@ -575,7 +577,7 @@ def mutations_det(
         mutation_window = sequence[site_start:site_end]
 
     # Compute number of possible mutations
-    poss_mutants = np.prod([3 * (len(mutation_window) - i) for i in range(mut_per_seq)])
+    poss_mutants = int(np.prod([3 * (len(mutation_window) - i) for i in range(mut_per_seq)]) / factorial(mut_per_seq))
 
     if num_mutants == None:
         num_mutants = poss_mutants
@@ -637,16 +639,19 @@ def create_mutant_index(sequence, num_mutants, mut_per_seq):
     if mut_per_seq > 1:
         somelists = mut_per_seq * [mutants]
         elements = np.array(list(itertools.product(*somelists)))
-        
         mask = np.empty(len(elements), dtype=bool)
         for i, element in enumerate(elements):
-            mask[i] = len(np.unique([el[0] for el in element])) == 2
+            # No multiple mutations on the same site
+            positions = [el[0] for el in element]
+            mask[i] = (len(np.unique(positions)) == mut_per_seq)
+            # Check for right order of mutants
+            mask[i] = mask[i] * np.all(np.diff(positions) >= 0)
         mutants = elements[mask]
     else:
         mutants = [np.array([x]) for x in mutants]
     
         
-    if num_mutants < len(mutants * mut_per_seq):
+    if num_mutants < len(mutants):
         mutants_inds = np.random.choice(np.arange(len(mutants), dtype=int), num_mutants, replace=False)
         temp_mutants = []
         for index in mutants_inds:
@@ -760,21 +765,6 @@ def mutations_rand(
         mutants[i + i_0] = sequence[0:site_start] + mutate_from_index(mutation_window, x, letters) + sequence[site_end:]
         
     return mutants
-
-
-
-def _check_sequence_list(sequence_list):
-    if type(sequence_list) not in [list, np.ndarray, pd.core.series.Series]:
-        raise TypeError("sequence_list has to be list, numpy array or pandas series.")
-    else:
-        if any([type(seq) not in [str, Seq] for seq in sequence_list]):
-            raise TypeError("entries in `sequence_list` have to be of type string or Bio.Seq.Seq.")
-            
-    for i,seq in enumerate(sequence_list):
-        if type(seq) == str:
-            sequence_list[i] = Seq(seq)
-            
-    return sequence_list
     
 
 def add_primers(sequence_list, primer_index, autocomplete=False, len_to_complete=200):
@@ -876,3 +866,19 @@ def filter_mutation(alph, letter):
             result[j] = alph[i]
             j += 1
     return result
+
+
+def _check_sequence_list(sequence_list):
+    if type(sequence_list) not in [list, np.ndarray, pd.core.series.Series]:
+        raise TypeError("sequence_list has to be list, numpy array or pandas series.")
+    else:
+        if any([type(seq) not in [str, Seq] for seq in sequence_list]):
+            raise TypeError("entries in `sequence_list` have to be of type string or Bio.Seq.Seq.")
+            
+    for i,seq in enumerate(sequence_list):
+        if type(seq) == str:
+            sequence_list[i] = Seq(seq)
+            
+    return sequence_list
+
+

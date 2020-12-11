@@ -1,10 +1,10 @@
 # Reg-Seq Returns - The Whole Genome
 
 ## Overview
-This repository is the beginning the efforts to improve the original [Reg-Seq](https://github.com/RPGroup-PBoC/RegSeq) method to usable on a genome wide scale.
+This repository is the beginning the efforts to improve the original [Reg-Seq](https://github.com/RPGroup-PBoC/RegSeq) method to usable on a genome wide scale. This repository contains a software module, which can be found in the `software_module` folder. To install it, navigate into the folder, and install required packages by running `pip install -r requirements.txt`. Then, simply install the module by running `pip install -e .`, which installs the package in the editable mode, so modifications can be made without reinstalling it.
 
 
-## Layout (add specific instructions here)
+## Layout 
 
 The repository is split into seven main directories, many of which have subdirectories. This structure has been designed to be easily navigable by humans and computers alike, allowing for rapid location of specific files and instructions. Within each directory is a `README.md` file which summarizes the purpose of that directory as well as some examples where necessary. This structure may not be perfect for your intended us and may need to be modified. Each section is briefly described below.
 

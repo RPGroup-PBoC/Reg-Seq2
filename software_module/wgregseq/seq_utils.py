@@ -843,7 +843,7 @@ def _random_mutation_generator(sequence, rate, number_fixed):
         num_mutations = int(rate*len(sequence))
     else:
         num_mutations = np.random.poisson(len(sequence) * rate)
-    positions = np.random.choice(np.arange(len(sequence)), num_mutations)
+    positions = np.random.choice(np.arange(len(sequence)), num_mutations, replace=False)
     mutants = np.random.choice(np.arange(3), num_mutations)
     return  [(x, y) for (x, y) in zip(positions, mutants)]
     

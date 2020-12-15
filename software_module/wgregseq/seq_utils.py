@@ -693,7 +693,7 @@ def mutations_rand(
     site_end=None, 
     alph_type="DNA",
     number_fixed=False,
-    keep_wildtype=False
+    keep_wildtype=False,
 ):
     """Creates single or double mutants.
     
@@ -716,8 +716,11 @@ def mutations_rand(
         If True, the number of mutations is fixed as the rate times length of the sequence.
     - keep_wildtype : bool, default False
         If True, adds wild type sequence as first sequence in the list.
+        
     Returns
     -------
+    - mutants : list
+        List of mutant sequences. Each element is a string.
     """
     
     if not (isint(num_mutants) or num_mutants == None):
@@ -765,6 +768,14 @@ def mutations_rand(
         mutants[i + i_0] = sequence[0:site_start] + mutate_from_index(mutation_window, x, letters) + sequence[site_end:]
         
     return mutants
+
+
+def random_mutation_generator(sequence, rate, num_mutants, number_fixed):
+    mutant_list = np.empty(num_mutants, dtype=object)
+    for i in range(num_mutants):
+        mutant_list[i] = _random_mutation_generator(sequence, rate, number_fixed)
+    
+    return mutant_list
     
 
 def add_primers(sequence_list, primer_index, autocomplete=False, len_to_complete=200):
@@ -829,13 +840,30 @@ def add_primers(sequence_list, primer_index, autocomplete=False, len_to_complete
     return new_seq_list
 
 
-
-def random_mutation_generator(sequence, rate, num_mutants, number_fixed):
-    mutant_list = np.empty(num_mutants, dtype=object)
-    for i in range(num_mutants):
-        mutant_list[i] = _random_mutation_generator(sequence, rate, number_fixed)
+def mutation_coverage(wildtype_seq, mutants_list, site_start=0, site_end=None):
     
-    return mutant_list
+    if not isint(site_start):
+        raise TypeError("`site_start` is of type {} but has to be integer valued.".format(type(site_start)))
+        
+    if not (isint(site_end) or site_end == None):
+        raise TypeError("`site_end` is of type {} but has to be integer valued.".format(type(site_end)))
+    
+    if site_end==None:
+        wildtype_seq = wildtype_seq[site_start:]
+        mutations = np.zeros([len(mutants_list), len(wildtype_seq)])
+        wildtype_list = list(wildtype_seq)
+        
+        for i, sequence in enumerate(mutants_list):
+            mutations[i, :] = [x != y for (x, y) in zip(list(sequence[site_start:]), wildtype_list)]
+    else:
+        wildtype_seq = wildtype_seq[site_start:site_end]
+        mutations = np.zeros([len(mutants_list), len(wildtype_seq)])
+        wildtype_list = list(wildtype_seq)
+        for i, sequence in enumerate(mutants_list):
+            mutations[i, :] = [x != y for (x, y) in zip(list(sequence[site_start:site_end]), wildtype_list)]
+           
+    return np.mean(mutations, axis=0)
+
     
 @numba.njit
 def _random_mutation_generator(sequence, rate, number_fixed):

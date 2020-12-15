@@ -50,7 +50,16 @@ def choose_dict(dicttype, modeltype='MAT'):
 
 
 def complement_seq(sequence, rev=False):
-    com_dict = {"A": "T", "T": "A", "G": "C", "C": "G"}
+    com_dict = {
+        "A": "T", 
+        "T": "A", 
+        "G": "C", 
+        "C": "G", 
+        "a": "t", 
+        "t": "a",
+        "c": "g",
+        "g": "c"
+    }
     rev_list = [com_dict[x] for x in sequence]
     if rev:
         com_sequence = "".join(reversed(rev_list))

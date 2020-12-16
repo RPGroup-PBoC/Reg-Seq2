@@ -519,7 +519,30 @@ def scan_enzymes(sequence_list, enzymes=[]):
         return num_sites, enzymes
     else:
         return num_sites
+    
+    
+def add_restriction_site(sequence_list, enzyme):
+    
+    
+    # Enzyme classes in Biopython are weird but this works
+    if not ((type(enzyme) == str) or (type(enzyme).__bases__[-1] == Restriction.RestrictionType)): 
+        raise TypeError("enzyme has to be either string or of type of Bio.Restriction.Restriction.RestrictionType")
+    
+    if type(enzyme) == str:
+        try:
+            getattr(sys.modules[__name__], enzyme)
+        except AttributeError:
+            raise ValueError("There is no restriction enzyme {}. Check spelling, naming is case-sensitive.".format(enzyme))
+        enzyme = getattr(sys.modules[__name__], enzyme)
         
+    # Check inputs
+    if type(sequence_list) == pd.core.series.Series:
+        sequence_list = copy.deepcopy(sequence_list.values)
+        
+    sequence_list = _check_sequence_list(sequence_list)
+    site = enzyme.site
+    
+    return np.array([str(seq + site) for seq in sequence_list], dtype=object)
     
     
 def mutations_det(
@@ -778,7 +801,7 @@ def random_mutation_generator(sequence, rate, num_mutants, number_fixed):
     return mutant_list
     
 
-def add_primers(sequence_list, primer_index, autocomplete=False, len_to_complete=200):
+def add_primers(sequence_list, primer_index, autocomplete=False, len_to_complete=200, rev_only=False):
     """Add a orthogonal primers to sequences and possibily add random positions up to certain length.
     
     Parameters
@@ -802,7 +825,7 @@ def add_primers(sequence_list, primer_index, autocomplete=False, len_to_complete
     if type(sequence_list) not in [list, np.ndarray, pd.core.series.Series]:
         raise TypeError("sequence_list has to be list, numpy array or pandas series.")
     else:
-        if any([type(seq) not in [str, Seq] for seq in sequence_list]):
+        if any([type(seq) not in [str, Seq, np.str_] for seq in sequence_list]):
             raise TypeError("entries in `sequence_list` have to be of type string or Bio.Seq.Seq.")
             
     if not isint(primer_index):
@@ -816,6 +839,9 @@ def add_primers(sequence_list, primer_index, autocomplete=False, len_to_complete
     if type(autocomplete) != bool:
         raise TypeError("`len_to_complete` is of type {} but has to be boolean.".format(type(autocomplete)))
         
+    if type(rev_only) != bool:
+        raise TypeError("`len_to_complete` is of type {} but has to be boolean.".format(type(rev_only)))
+        
     # Import primers       
     local_path = pathlib.Path(__file__).parent.absolute()
     kosprimefwd = list(parse(str(local_path) + '/forward_finalprimers.fasta','fasta'))
@@ -827,10 +853,13 @@ def add_primers(sequence_list, primer_index, autocomplete=False, len_to_complete
     
     # Copy sequence_list to not override input
     new_seq_list = copy.deepcopy(sequence_list)
-    
+
     # Add primers to sequences and autocomplete if chosen to
     for i, seq in enumerate(sequence_list):
-        new_seq_list[i] = forward+seq+reverse
+        if rev_only:
+            new_seq_list[i] = seq + reverse
+        else:
+            new_seq_list[i] = forward + seq + reverse
         if autocomplete and len(sequence_list[i]) < len_to_complete:
             new_seq_list[i] = new_seq_list[i] + gen_rand_seq(len_to_complete - len(new_seq_list[i]))
         elif len(new_seq_list[i]) > len_to_complete:
@@ -863,6 +892,8 @@ def mutation_coverage(wildtype_seq, mutants_list, site_start=0, site_end=None):
             mutations[i, :] = [x != y for (x, y) in zip(list(sequence[site_start:site_end]), wildtype_list)]
            
     return np.mean(mutations, axis=0)
+
+
 
     
 @numba.njit

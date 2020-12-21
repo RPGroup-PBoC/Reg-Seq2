@@ -32,6 +32,8 @@ def get_replichore(pos, ori = 3923882.5, ter = 1590250.5 ):
         Genomic coordinate of the replication terminus.
     """
     
+    pos = int(pos)
+    
     if((pos<0)| (pos>4641652)):
         raise TypeError("position must be within genome.")
     

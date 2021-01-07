@@ -15,7 +15,7 @@ from Bio.Restriction import *
 from Bio.Seq import Seq
 from Bio.SeqIO import parse
 
-from .utils import isint, choose_dict
+from .utils import isint, choose_dict, import_primer_fwd, import_primer_rev
 
 import warnings
 
@@ -770,14 +770,9 @@ def add_primers(sequence_list, primer_index, autocomplete=False, len_to_complete
     if type(rev_only) != bool:
         raise TypeError("`len_to_complete` is of type {} but has to be boolean.".format(type(rev_only)))
         
-    # Import primers       
-    local_path = pathlib.Path(__file__).parent.absolute()
-    kosprimefwd = list(parse(str(local_path) + '/forward_finalprimers.fasta','fasta'))
-    kosprimerev = list(parse(str(local_path) + '/reverse_finalprimers.fasta','fasta'))
-    
-    # Extract primers that is added
-    forward = str(kosprimefwd[primer_index].seq)
-    reverse = str(kosprimerev[primer_index].seq)
+    # Import primers
+    forward = import_primer_fwd(primer_index)
+    reverse = import_primer_rev(primer_index)
     
     # Copy sequence_list to not override input
     new_seq_list = copy.deepcopy(sequence_list)

@@ -292,10 +292,10 @@ def gen_scramble_dataset(
         
         #if (i % 10)==0: print(i)
         # Generate WT sequence
-        seq = wgregseq.gen_rand_seq(seq_length)
+        seq = gen_rand_seq(seq_length)
         
         # Generate energy matrix
-        emat = wgregseq.gen_emat_single_site(seq = seq, 
+        emat = gen_emat_single_site(seq = seq, 
                                              site_start = site_start, 
                                              site_size = site_size, 
                                              site_mean = site_mean, 
@@ -304,17 +304,17 @@ def gen_scramble_dataset(
                                              background_sd = background_sd)
         
         # Generate scrambles
-        scrambles = wgregseq.create_scrambles_df(sequence = seq, 
+        scrambles = create_scrambles_df(sequence = seq, 
                                                  windowsize = windowsize, 
                                                  overlap = overlap, 
                                                  attempts = attempts, 
                                                  preserve_content = True)
         
         # Sum effects for each scramble
-        scramble_effects = wgregseq.sum_emat_df(scrambles_df = scrambles, emat = emat)
+        scramble_effects = sum_emat_df(scrambles_df = scrambles, emat = emat)
         scramble_effects['rep'] = i
 
-        barcode_effects = wgregseq.gen_barcode_effects(barcode_num = barcode_num, barcode_noise = barcode_noise, df = scramble_effects)
+        barcode_effects = gen_barcode_effects(barcode_num = barcode_num, barcode_noise = barcode_noise, df = scramble_effects)
         
         results = results.append(barcode_effects)
     

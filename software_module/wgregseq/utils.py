@@ -1,4 +1,8 @@
 import numpy as np
+from Bio.Seq import Seq
+from Bio.SeqIO import parse
+
+import pathlib
 
 def isint(var):
     """
@@ -66,3 +70,24 @@ def complement_seq(sequence, rev=False):
     else:
         com_sequence = "".join(rev_list)
     return com_sequence
+
+
+def import_primer_fwd(index):
+   # Import primers       
+    local_path = pathlib.Path(__file__).parent.absolute()
+    primer_list = list(parse(str(local_path) + '/forward_finalprimers.fasta','fasta'))
+
+    # Extract primer that is added
+    primer = str(primer_list[index].seq)
+    return primer
+    
+
+
+def import_primer_rev(index):
+   # Import primers       
+    local_path = pathlib.Path(__file__).parent.absolute()
+    primer_list = list(parse(str(local_path) + '/reverse_finalprimers.fasta','fasta'))
+    
+    # Extract primers that is added
+    primer = str(primer_list[index].seq)
+    return primer

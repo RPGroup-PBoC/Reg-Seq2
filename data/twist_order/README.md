@@ -9,6 +9,7 @@ column labeled `primer_added`, which is either `True` if the primer pair is alre
 | lacUV5_tetOx_single_double_mutants.csv | lacUV5+tetOx single and double mutants | `code/experimental_design/twist_order/tetR_regulation/generate_sequences.ipynb`| Tom |
 | natural_tet_promoters.csv | P_tetR1, P_tetR2, P_tetA mutated at 0.1 rate | `code/experimental_design/twist_order/tetR_regulation/generate_sequences.ipynb`| Tom |
 | lacUV5_mutants.csv | various mutants with up to six mutations of *lacUV5* | `code/experimental_design/twist_order/lacUV5_mutants/generate_sequences.ipynb`| Tom |
+| purR_twist_sequences.csv | all single and double mutants for purR simple repression, including downstream and overlapping purR site constructs| `code/experimental_design/twist_order/purR_titration/purR_twist_order.ipynb`| Suzy |
 | twist_sys_scrambles_2_16.csv | Systematic scrambles of 29 promoters with window sizes from 2-16 bp. | `code/experimental_design/twist_order/systematic_scrambles/twist_systematic_scrambles.ipynb`| Scott |
 | twist_sys_scrambles_10.csv | Systematic scrambles of 29 promoters with window size 10 bp and 1 bp overlaps. | `code/experimental_design/twist_order/systematic_scrambles/twist_systematic_scrambles.ipynb`| Scott |
 | twist_site_scrambles.csv | Scrambles of biocyc defined TF binding sites in 29 promoters. | `code/experimental_design/twist_order/site_scrambles/twist_site_scrambles.ipynb`| Scott |

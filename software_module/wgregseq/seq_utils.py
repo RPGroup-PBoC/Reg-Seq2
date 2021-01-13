@@ -15,8 +15,8 @@ from Bio.Restriction import *
 from Bio.Seq import Seq
 from Bio.SeqIO import parse
 
-from .utils import isint, choose_dict, import_primer_fwd, import_primer_rev
-
+from .utils import isint, choose_dict, import_primer_fwd, import_primer_rev,_check_sequence_list
+from .quality_control import scan_enzymes
 import warnings
 
 
@@ -824,17 +824,5 @@ def filter_mutation(alph, letter):
     return result
 
 
-def _check_sequence_list(sequence_list):
-    if type(sequence_list) not in [list, np.ndarray, pd.core.series.Series]:
-        raise TypeError("sequence_list has to be list, numpy array or pandas series.")
-    else:
-        if any([type(seq) not in [str, Seq] for seq in sequence_list]):
-            raise TypeError("entries in `sequence_list` have to be of type string or Bio.Seq.Seq.")
-            
-    for i,seq in enumerate(sequence_list):
-        if type(seq) == str:
-            sequence_list[i] = Seq(seq)
-            
-    return sequence_list
 
 

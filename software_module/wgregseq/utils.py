@@ -1,6 +1,7 @@
 import numpy as np
 from Bio.Seq import Seq
 from Bio.SeqIO import parse
+import pandas as pd
 
 import pathlib
 
@@ -91,3 +92,16 @@ def import_primer_rev(index):
     # Extract primers that is added
     primer = str(primer_list[index].seq)
     return primer
+
+def _check_sequence_list(sequence_list):
+    if type(sequence_list) not in [list, np.ndarray, pd.core.series.Series]:
+        raise TypeError("sequence_list has to be list, numpy array or pandas series.")
+    else:
+        if any([type(seq) not in [str, Seq] for seq in sequence_list]):
+            raise TypeError("entries in `sequence_list` have to be of type string or Bio.Seq.Seq.")
+            
+    for i,seq in enumerate(sequence_list):
+        if type(seq) == str:
+            sequence_list[i] = Seq(seq)
+            
+    return sequence_list

@@ -9,7 +9,7 @@ from Bio.Restriction import *
 from Bio.Seq import Seq
 
 from .seq_utils import _check_sequence_list
-from .utils import isint,import_primer_fwd,import_primer_rev
+from .utils import isint,import_primer_fwd,import_primer_rev,_check_sequence_list
 
 import warnings
 

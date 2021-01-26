@@ -137,47 +137,59 @@ def scramble(sequence, attempts, preserve_content=True):
     sequence : string
         
     attempts : int
-        Number of scrambles which are created. Most dissimilar one is chosen.
+        Number of scrambles which are created. Most dissimilar one is chosen. Ignored if 
+        content is not preserved.
     preserve_content : bool
         If True, shuffles the existing sequence. If False, a completely arbitrary sequence is created.
+    
     Returns
     -------
-    scrambles[np.argmax(distances)] : string
+    scramble_seq : string
         Most distant scrambled sequence
     """
-    # Check argument types
-    if not isint(attempts):
-        raise ValueError("`attempts` has to be an integer.")
-    else:
-        # If type float, change to int
-        attempts = int(attempts)
-        
-    
-    scrambles = np.empty(attempts, dtype='<U{}'.format(len(sequence)))
-    
-    # Create scrambles
-    for i in range(attempts):
-        if preserve_content:
-            snip = "".join(random.sample(sequence, len(sequence)))
+
+    # Make multiple scrambles if content is preserved
+    if preserve_content:
+        scrambles = np.empty(attempts, dtype='<U{}'.format(len(sequence)))
+        # Create scrambles
+        if attempts == None:
+            raise ValueError("`attempts` has to be given when site is shuffeled.")
         else:
-            snip = "".join(np.random.choice(["A", "C", "T", "G"], len(sequence)))
-            
-        scrambles[i] = snip
-    
-    # Compute number of mismatches
-    distances = np.zeros(attempts)
-    for i in range(attempts):
-        distances[i] = np.sum([x != y for (x, y) in zip(sequence, scrambles[i])])
+            if not isint(attempts):
+                raise ValueError("`attempts` has to be an integer.")
+            else:
+                # If type float, change to int
+                attempts = int(attempts)
 
-    return scrambles[np.argmax(distances)]
+        for i in range(attempts):
+            snip = "".join(random.sample(sequence, len(sequence)))
+            scrambles[i] = snip
+
+        # Compute number of mismatches
+        distances = np.zeros(attempts)
+        for i in range(attempts):
+            distances[i] = np.sum([x != y for (x, y) in zip(sequence, scrambles[i])])
+        scramble_seq = scrambles[np.argmax(distances)]
+    else:
+        scramble_seq = _make_distant_sequence(sequence)
     
+    return scramble_seq
     
 
-def create_scrambles(
+def _make_distant_sequence(sequence):
+    seq_list = list(sequence)
+    scramble_seq_list = []
+    for x in seq_list:
+        sub_alph = filter_mutation(x, np.array(["A", "C", "G", "T"]))
+        scramble_seq_list.append(np.random.choice(sub_alph, 1)[0])
+    return "".join(scramble_seq_list)
+
+
+def scramble_list(
     sequence, 
     windowsize, 
     overlap,
-    attempts,
+    attempts=None,
     number=1,
     preserve_content=True, 
     ignore_imperfect_scrambling=False,
@@ -283,11 +295,11 @@ def create_scrambles(
 
 
 
-def create_scrambles_df(
+def create_scrambles(
     sequence, 
     windowsize, 
     overlap, 
-    attempts,
+    attempts=None,
     number=1,
     preserve_content=True, 
     ignore_imperfect_scrambling=False,
@@ -348,7 +360,7 @@ def create_scrambles_df(
         number = int(number)
     
     # Get scrambles
-    scrambled_sequences = create_scrambles(
+    scrambled_sequences = scramble_list(
         sequence, 
         windowsize, 
         overlap, 
@@ -358,9 +370,6 @@ def create_scrambles_df(
         ignore_imperfect_scrambling,
         check_enzymes
     )
-    
-    # Read wild type sequence
-    wild_type = scrambled_sequences[0]
     
     # Get number of scrambles
     n_scrambles = int(np.floor((len(sequence) - windowsize) / (windowsize - overlap))) + 1
@@ -387,7 +396,7 @@ def create_scrambles_df(
     return scramble_df
 
 
-def create_scrambles_df_2(
+def create_scrambles_df(
     df, 
     windowsize, 
     overlap, 
@@ -398,7 +407,7 @@ def create_scrambles_df_2(
     check_enzymes=[]
 ):
     """
-    Function to apply create_scrambles_df to a dataframe of wt sequences.
+    Function to apply create_scrambles to a dataframe of wt sequences.
     
     Parameters
     ----------
@@ -428,18 +437,19 @@ def create_scrambles_df_2(
     df_tmp = pd.DataFrame()
     df_results = pd.DataFrame()
     
-    for i,row in df.iterrows():
+    for _,row in df.iterrows():
         wt_seq = str(row['wt_sequence'])
     
-        df_tmp = create_scrambles_df(wt_seq, 
-                                     windowsize, 
-                                     overlap, 
-                                     attempts, 
-                                     number, 
-                                     preserve_content, 
-                                     ignore_imperfect_scrambling,
-                                     check_enzymes
-                                    )
+        df_tmp = create_scrambles(
+            wt_seq, 
+            windowsize, 
+            overlap, 
+            attempts, 
+            number, 
+            preserve_content, 
+            ignore_imperfect_scrambling,
+            check_enzymes
+        )
         
         df_tmp['promoter'],df_tmp['TSS'],df_tmp['direction'] = row['promoter'],row['TSS'],row['direction']
         
@@ -448,10 +458,97 @@ def create_scrambles_df_2(
     
     return df_results
     
+
+def scramble_site(
+    wt_seq, 
+    rel_start_site, 
+    rel_end_site, 
+    attempts=100, 
+    preserve_content=False, 
+    minus_10_start=None, 
+    minus_10_end=None, 
+    minus_35_start=None, 
+    minus_35_end=None
+    ):
     
+    """
+    Scrambles a site within a sequence, defined by coordinates relative to the wt_seq string. 
+    Will avoid scrambling -10/-35 regions if given. Assumes that site at least overlaps wt_seq. 
+    Assumes minus 10/35 are contained entirely within wt_seq.
+    
+    Parameters
+    ----------
+    wt_seq : string
+        The WT sequence to be scrambled. Indexes will be relative to this string, indexed from 0. Ideally string is upper case.
+    rel_start_site : int
+        The start position of the site to scramble. Relative to the beginning of the wt_seq string.
+    rel_end_site : int
+        The end position of the site to scramble. Relative to the beginning of the wt_seq string.
+    attempts : int
+        Number of attempts to draw the scramble from. Passed to scramble()
+    preserve_content : bool
+        Should the nucleotide content of the scramble site be preserved or should random nucleotides be used? Passed to scramble()
+    minus_10_start : int
+        The start position of the minus 10 to preserve. Relative to the beginning of the wt_seq string.
+    minus_10_end : int
+        The end position of the minus 10 to preserve. Relative to the beginning of the wt_seq string.
+    minus_35_start : int  
+        The start position of the minus 10 to preserve. Relative to the beginning of the wt_seq string.
+    minus_35_end : int
+        The start position of the minus 10 to preserve. Relative to the beginning of the wt_seq string.    
+        
+    Returns
+    ---------
+    scramble : string
+        The wt sequence with the defined regions scrambled (or preserved). Scrambles shown in lowercase.
+    """
+    
+    #Check that start and end of site are in bounds
+    #set to 0 or max if out of bounds.
+    if rel_start_site<0 :
+        rel_start_site = 0
+    
+    if rel_end_site>len(wt_seq) : 
+        rel_end_site = len(wt_seq)
+        
+    rel_start_site = int(rel_start_site)
+    rel_end_site = int(rel_end_site)
+    
+    site = scramble(wt_seq[rel_start_site:rel_end_site], attempts, preserve_content)
+        
+    scramble_seq = wt_seq[0:rel_start_site] + site.lower() + wt_seq[rel_end_site:len(wt_seq)]
+
+    minus_10 = (type(minus_10_start)==int) & (type(minus_10_end)==int)
+    
+    if type(minus_10_start)==float:
+        minus_10 = (~np.isnan(minus_10_start)) & (~np.isnan(minus_10_end))
+        
+    minus_35 = (type(minus_35_start)==int) & (type(minus_35_end)==int)
+    
+    if type(minus_35_start)==float:
+        minus_35 = (~np.isnan(minus_35_start)) & (~np.isnan(minus_35_end))
+        
+    if minus_10:
+        
+        minus_10_start = int(minus_10_start)
+        minus_10_end = int(minus_10_end)
+        
+        scramble_seq = scramble_seq[0:minus_10_start] + wt_seq[minus_10_start:minus_10_end] + scramble_seq[minus_10_end:len(scramble)]
+    
+    if minus_35:
+        
+        minus_35_start = int(minus_35_start)
+        minus_35_end = int(minus_35_end)
+        
+        scramble_seq = scramble_seq[0:minus_35_start] + wt_seq[minus_35_start:minus_35_end] + scramble_seq[minus_35_end:len(scramble)]
+    
+    return scramble_seq    
+
+
 def add_restriction_site(sequence_list, enzyme):
-    
-    
+    """
+    Add a restriction site to the end of each sequence in a list.
+    """
     # Enzyme classes in Biopython are weird but this works
     if not ((type(enzyme) == str) or (type(enzyme).__bases__[-1] == Restriction.RestrictionType)): 
         raise TypeError("enzyme has to be either string or of type of Bio.Restriction.Restriction.RestrictionType")
@@ -482,7 +579,11 @@ def mutations_det(
     alph_type="DNA",
     keep_wildtype=False
 ):
-    """Creates single or double mutants.
+    """Create all possible mutants deterministically and choose subset or all.
+
+    Choose this method for creating mutants from a sequence when the number of possible
+    mutants is in the same order of magnitude as the number of chosen mutants to prevent
+    duplicates.
     
     
     Parameters
@@ -632,7 +733,7 @@ def mutate_from_index(sequence, index, alph):
     """
     seq_list = list(sequence)
     for loci, mutation in index:
-        seq_list[loci] = filter_mutation(alph, seq_list[loci])[mutation].lower()
+        seq_list[loci] = filter_mutation(seq_list[loci], alph)[mutation].lower()
     return "".join(seq_list)
 
 
@@ -810,7 +911,7 @@ def filter_letter(x, letter):
 
 
 @numba.njit
-def filter_mutation(alph, letter):
+def filter_mutation(letter, alph):
     j = 0
     for i in range(alph.size):
         if filter_letter(alph[i], letter):

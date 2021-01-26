@@ -6,4 +6,3 @@ scipy
 logomaker
 matplotlib
 statsmodels
-seaborn

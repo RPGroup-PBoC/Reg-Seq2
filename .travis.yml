@@ -3,6 +3,7 @@ python:
  
   - "3.6"      # current default Python on Travis CI
   - "3.7"
+    env: TEST_TYPE="quandl" PANDAS=1 NUMPY=1.19
   - "3.8"
   - "3.8-dev"  # 3.8 development branch
 

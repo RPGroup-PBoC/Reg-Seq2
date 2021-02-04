@@ -1,0 +1,151 @@
+Primer check passed.
+
+---------------------------------------------
+ 
+Constructs: ['lacUV5+O1_mutant']
+
+Oligo length check passed! Length: 122
+
+Forward Primers: [100].
+Reverse Primers: [100 200].
+Uniqueness check passed.
+Restriction enzyme sites:
+BsaI: 12.0
+ApaI: 1.0
+SacI: 1.0
+NheI: 0.0
+SbfI: 0.0
+XhoI: 0.0
+SalI: 0.0
+
+---------------------------------------------
+ 
+Constructs: ['lacUV5+O1']
+
+Oligo length check passed! Length: 122
+
+Forward Primers: [100].
+Reverse Primers: [100 201].
+Uniqueness check DID NOT pass.
+9 duplicated sequences. Check manually.
+Restriction enzyme sites:
+BsaI: 0.0
+NheI: 0.0
+ApaI: 0.0
+SbfI: 0.0
+XhoI: 0.0
+SalI: 0.0
+SacI: 0.0
+
+---------------------------------------------
+ 
+Constructs: ['lacUV5+O2']
+
+Oligo length check passed! Length: 122
+
+Forward Primers: [100].
+Reverse Primers: [100 202].
+Uniqueness check DID NOT pass.
+9 duplicated sequences. Check manually.
+Restriction enzyme sites:
+BsaI: 0.0
+NheI: 0.0
+ApaI: 0.0
+SbfI: 0.0
+XhoI: 0.0
+SalI: 0.0
+SacI: 0.0
+
+---------------------------------------------
+ 
+Constructs: ['lacUV5+O3']
+
+Oligo length check passed! Length: 122
+
+Forward Primers: [100].
+Reverse Primers: [100 203].
+Uniqueness check DID NOT pass.
+9 duplicated sequences. Check manually.
+Restriction enzyme sites:
+BsaI: 0.0
+NheI: 0.0
+ApaI: 0.0
+SbfI: 0.0
+XhoI: 0.0
+SalI: 0.0
+SacI: 0.0
+
+---------------------------------------------
+ 
+Constructs: ['lacUV5_tetO1 single mutant']
+
+Oligo length check passed! Length: 120
+
+Forward Primers: [102].
+Reverse Primers: [102 204].
+Uniqueness check passed.
+Restriction enzyme sites:
+BsaI: 1.0
+NheI: 0.0
+ApaI: 0.0
+SbfI: 0.0
+XhoI: 0.0
+SalI: 0.0
+SacI: 0.0
+
+---------------------------------------------
+ 
+Constructs: ['lacUV5_tetO1 double mutant']
+
+Oligo length check passed! Length: 120
+
+Forward Primers: [102].
+Reverse Primers: [102 205].
+Uniqueness check passed.
+Restriction enzyme sites:
+BsaI: 26.0
+XhoI: 2.0
+NheI: 1.0
+ApaI: 1.0
+SbfI: 0.0
+SalI: 0.0
+SacI: 0.0
+
+---------------------------------------------
+ 
+Constructs: ['lacUV5_tetO2 single mutant']
+
+Oligo length check passed! Length: 120
+
+Forward Primers: [102].
+Reverse Primers: [102 206].
+Uniqueness check passed.
+Restriction enzyme sites:
+BsaI: 1.0
+NheI: 0.0
+ApaI: 0.0
+SbfI: 0.0
+XhoI: 0.0
+SalI: 0.0
+SacI: 0.0
+
+---------------------------------------------
+ 
+Constructs: ['lacUV5_tetO2 double mutant']
+
+Oligo length check passed! Length: 120
+
+Forward Primers: [102].
+Reverse Primers: [102 207].
+Uniqueness check passed.
+Restriction enzyme sites:
+ApaI: 16.0
+BsaI: 12.0
+NheI: 2.0
+SbfI: 0.0
+XhoI: 0.0
+SalI: 0.0
+SacI: 0.0
+
+---------------------------------------------
+ 

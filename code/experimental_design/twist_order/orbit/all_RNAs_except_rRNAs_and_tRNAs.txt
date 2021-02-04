@@ -1,0 +1,94 @@
+Gene Name	Product Name	Sequence - coordinates of DNA region	Sequence - length of region	Left-End-Position	Right-End-Position
+3'ETS-<i>leuZ</i>	small regulatory RNA 3'ETS<sup><i>leuZ</i></sup>	[3'ETS-leuZ 1,991,748 &larr; 1,991,814]	67	1991748	1991814
+agrA	small RNA AgrA	[agrA 3,648,063 &rarr; 3,648,144]	82	3648063	3648144
+agrB	small regulatory RNA AgrB	[agrB 3,648,294 &rarr; 3,648,375]	82	3648294	3648375
+arcZ	small regulatory RNA ArcZ	[arcZ 3,350,577 &rarr; 3,350,697]	121	3350577	3350697
+arrS	small regulatory RNA ArrS	[arrS 3,657,985 &larr; 3,658,054]	70	3657985	3658054
+C0293	small regulatory RNA C0293	[C0293 1,196,711 &rarr; 1,196,782]	72	1196711	1196782
+chiX	small regulatory RNA ChiX	[chiX 507,204 &rarr; 507,287]	84	507204	507287
+cpxQ	small regulatory RNA CpxQ	[cpxQ 4,106,330 &rarr; 4,106,387]	58	4106330	4106387
+csrB	small regulatory RNA CsrB	[csrB 2,924,156 &larr; 2,924,524]	369	2924156	2924524
+csrC	small regulatory RNA CsrC	[csrC 4,051,036 &rarr; 4,051,281]	246	4051036	4051281
+cyaR	small regulatory RNA CyaR	[cyaR 2,167,114 &rarr; 2,167,200]	87	2167114	2167200
+dicF	Qin prophage; small regulatory RNA DicF	[dicF 1,649,382 &rarr; 1,649,434]	53	1649382	1649434
+dsrA	small regulatory RNA DsrA	[dsrA 2,025,223 &larr; 2,025,313]	91	2025223	2025313
+esrE	small RNA EsrE	[esrE 4,019,978 &rarr; 4,020,229]	252	4019978	4020229
+eyeA	CP4-6 prophage; small RNA EyeA	[eyeA 272,580 &rarr; 272,654]	75	272580	272654
+ffs	signal recognition particle 4.5S RNA	[ffs 476,448 &rarr; 476,561]	114	476448	476561
+fnrS	small regulatory RNA FnrS	[fnrS 1,409,129 &rarr; 1,409,250]	122	1409129	1409250
+G0-10706	small RNA	[G0-10706 4,441,225 &larr; 4,441,330]	106	4441225	4441330
+gadF	small regulatory RNA GadF	[gadF 3,658,992 &rarr; 3,659,082]	91	3658992	3659082
+gadY	small regulatory RNA GadY	[gadY 3,664,864 &rarr; 3,664,969]	106	3664864	3664969
+gcvB	small regulatory RNA GcvB	[gcvB 2,942,696 &rarr; 2,942,901]	206	2942696	2942901
+glmY	small regulatory RNA GlmY	[glmY 2,691,157 &larr; 2,691,340]	184	2691157	2691340
+glmZ	small regulatory RNA GlmZ	[glmZ 3,986,432 &rarr; 3,986,603]	172	3986432	3986603
+ipeX	small RNA IpeX	[ipeX 574,367 &larr; 574,515]	149	574367	574515
+isrC	CP4-44 prophage; small RNA IsrC	[isrC 2,071,317 &rarr; 2,071,511]	195	2071317	2071511
+istR	small regulatory RNA IstR-1	[istR 3,853,118 &larr; 3,853,257]	140	3853118	3853257
+mcaS	small regulatory RNA McaS	[mcaS 1,405,658 &larr; 1,405,751]	94	1405658	1405751
+mgrR	small regulatory RNA MgrR	[mgrR 1,622,817 &larr; 1,622,914]	98	1622817	1622914
+micA	small regulatory RNA MicA	[micA 2,814,802 &rarr; 2,814,874]	73	2814802	2814874
+micC	small regulatory RNA MicC	[micC 1,437,121 &rarr; 1,437,231]	111	1437121	1437231
+micF	small regulatory RNA MicF	[micF 2,313,084 &rarr; 2,313,176]	93	2313084	2313176
+micL	small regulatory RNA MicL-S	[micL 1,958,441 &larr; 1,958,520]	80	1958441	1958520
+naRNA1	naRNA1	[naRNA1 4,326,305 &larr; 4,326,381]	77	4326305	4326381
+naRNA2	naRNA2	[naRNA2 4,326,205 &larr; 4,326,281]	77	4326205	4326281
+naRNA3	naRNA3	[naRNA3 4,326,105 &larr; 4,326,181]	77	4326105	4326181
+naRNA4	naRNA4	[naRNA4 4,326,005 &larr; 4,326,081]	77	4326005	4326081
+naRNA5	naRNA5	[naRNA5 4,325,905 &larr; 4,325,981]	77	4325905	4325981
+naRNA6	naRNA6	[naRNA6 4,325,805 &larr; 4,325,881]	77	4325805	4325881
+nc1	small noncoding RNA involved in nucleoid organization	[nc1 297,137 &larr; 297,304]	168	297137	297304
+och5	small regulatory RNA Och5	[och5 3,067,187 &rarr; 3,067,344]	158	3067187	3067344
+ohsC	small regulatory RNA OhsC	[ohsC 2,700,520 &rarr; 2,700,598]	79	2700520	2700598
+omrA	small regulatory RNA OmrA	[omrA 2,976,102 &larr; 2,976,189]	88	2976102	2976189
+omrB	small regulatory RNA OmrB	[omrB 2,976,304 &larr; 2,976,385]	82	2976304	2976385
+orzP	small RNA OrzP	[orzP 2,204,402 &rarr; 2,204,484]	83	2204402	2204484
+oxyS	small regulatory RNA OxyS	[oxyS 4,158,278 &larr; 4,158,394]	117	4158278	4158394
+pspH	small regulatory RNA PspH	[pspH 4,263,139 &rarr; 4,263,249]	111	4263139	4263249
+raiZ	small RNA RaiZ	[raiZ 2,737,381 &rarr; 2,737,542]	162	2737381	2737542
+ralA	Rac prophage; small regulatory RNA antitoxin RalA	[ralA 1,413,556 &rarr; 1,413,734]	179	1413556	1413734
+rbsZ	small regulatory RNA RbsZ	[rbsZ 3,937,045 &rarr; 3,937,278]	234	3937045	3937278
+rdlA	putative antisense regulatory RNA RdlA	[rdlA 1,269,323 &rarr; 1,269,389]	67	1269323	1269389
+rdlB	putative antisense regulatory RNA RdlB	[rdlB 1,269,858 &rarr; 1,269,923]	66	1269858	1269923
+rdlC	putative antisense regulatory RNA RdlC	[rdlC 1,270,393 &rarr; 1,270,460]	68	1270393	1270460
+rdlD	antisense regulatory RNA RdlD	[rdlD 3,700,136 &rarr; 3,700,199]	64	3700136	3700199
+rirA	small regulatory RNA RirA	[rirA 3,808,166 &larr; 3,808,238]	73	3808166	3808238
+rprA	small regulatory RNA RprA	[rprA 1,770,372 &rarr; 1,770,477]	106	1770372	1770477
+rseX	small regulatory RNA RseX	[rseX 2,033,649 &rarr; 2,033,739]	91	2033649	2033739
+rttR	small RNA RttR	[rttR 1,287,066 &larr; 1,287,236]	171	1287066	1287236
+rybA	small RNA RybA	[rybA 852,725 &larr; 853,064]	340	852725	853064
+rybB	small regulatory RNA RybB	[rybB 887,979 &larr; 888,057]	79	887979	888057
+rydB	small regulatory RNA RydB	[rydB 1,764,713 &larr; 1,764,780]	68	1764713	1764780
+rydC	small regulatory RNA RydC	[rydC 1,491,442 &larr; 1,491,506]	65	1491442	1491506
+ryeA	small antisense RNA RyeA	[ryeA 1,923,066 &rarr; 1,923,337]	272	1923066	1923337
+ryeG	small RNA RyeG	[ryeG 2,470,472 &larr; 2,470,665]	194	2470472	2470665
+ryfA	small regulatory RNA RyfA	[ryfA 2,653,855 &rarr; 2,654,158]	304	2653855	2654158
+ryfD	small regulatory RNA RyfD	[ryfD 2,734,153 &larr; 2,734,295]	143	2734153	2734295
+ryhB	small regulatory RNA RyhB	[ryhB 3,580,922 &larr; 3,581,016]	95	3580922	3581016
+ryjA	small RNA RyjA	[ryjA 4,277,926 &larr; 4,278,066]	141	4277926	4278066
+ryjB	small RNA RyjB	[ryjB 4,527,977 &rarr; 4,528,066]	90	4527977	4528066
+sdhX	small regulatory RNA SdhX	[sdhX 765,050 &rarr; 765,150]	101	765050	765150
+sdsN	small regulatory RNA SdsN	[sdsN 1,996,921 &rarr; 1,997,057]	137	1996921	1997057
+sdsR	small regulatory RNA SdsR	[sdsR 1,923,104 &larr; 1,923,207]	104	1923104	1923207
+sgrS	small regulatory RNA SgrS	[sgrS 77,367 &rarr; 77,593]	227	77367	77593
+sibA	small RNA SibA	[sibA 2,153,311 &rarr; 2,153,454]	144	2153311	2153454
+sibB	small RNA SibB	[sibB 2,153,646 &rarr; 2,153,781]	136	2153646	2153781
+sibC	small regulatory RNA antitoxin SibC	[sibC 3,056,851 &rarr; 3,056,991]	141	3056851	3056991
+sibD	small RNA SibD	[sibD 3,194,721 &larr; 3,194,865]	145	3194721	3194865
+sibE	small RNA SibE	[sibE 3,195,097 &larr; 3,195,240]	144	3195097	3195240
+sokB	putative small regulatory RNA antitoxin SokB	[sokB 1,492,119 &rarr; 1,492,174]	56	1492119	1492174
+sokC	small regulatory RNA antitoxin SokC	[sokC 16,952 &rarr; 17,006]	55	16952	17006
+sokE	small RNA SokE	[sokE 607,734 &rarr; 607,792]	59	607734	607792
+sokX	small RNA SokX	[sokX 2,887,353 &rarr; 2,887,408]	56	2887353	2887408
+spf	small regulatory RNA Spot 42	[spf 4,049,899 &rarr; 4,050,009]	111	4049899	4050009
+sraA	small RNA SraA	[sraA 458,728 &larr; 458,784]	57	458728	458784
+sraB	small RNA SraB	[sraB 1,146,589 &rarr; 1,146,757]	169	1146589	1146757
+sraG	small regulatory RNA SraG	[sraG 3,311,183 &rarr; 3,311,398]	216	3311183	3311398
+sroA	small RNA SroA	[sroA 75,516 &larr; 75,608]	93	75516	75608
+sroC	small regulatory RNA SroC	[sroC 686,681 &larr; 686,843]	163	686681	686843
+sroE	small RNA SroE	[sroE 2,640,595 &larr; 2,640,686]	92	2640595	2640686
+sroH	small RNA SroH	[sroH 4,190,327 &larr; 4,190,487]	161	4190327	4190487
+ssrA	tmRNA	[ssrA 2,755,593 &rarr; 2,755,955]	363	2755593	2755955
+ssrS	6S RNA	[ssrS 3,055,983 &rarr; 3,056,165]	183	3055983	3056165
+symR	small regulatory RNA antitoxin SymR	[symR 4,579,835 &rarr; 4,579,911]	77	4579835	4579911
+tff	putative small RNA T44	[tff 189,712 &rarr; 189,847]	136	189712	189847

@@ -9,7 +9,7 @@ from Bio.Restriction import *
 from Bio.Seq import Seq
 
 from .seq_utils import _check_sequence_list
-from .utils import isint,import_primer_fwd,import_primer_rev,_check_sequence_list
+from .utils import isint,import_primer_fwd,import_primer_rev,_check_sequence_list,complement_seq
 
 import warnings
 
@@ -85,8 +85,10 @@ def scan_enzymes(sequence_list, enzymes=[], ret_list=False):
 def scan_enzymes_print(sequence_list, enzymes=[]):
     counts, enzs = scan_enzymes(sequence_list, enzymes, ret_list=True)
     ind_sorted = np.flip(np.argsort(counts))
+    message = ""
     for count, enzyme in zip(counts[ind_sorted], np.array([enz for enz in enzs])[ind_sorted]):
-        print(enzyme, ": ", count)
+        message += str(enzyme)+ ": "+str(count)+'\n'
+    return message
 
 
 def find_restriction_sites(enzyme, sequence_list):
@@ -179,31 +181,33 @@ def check_primers_pool_df(df_pool):
     for index, row in df_pool.iterrows():
         for fwd_column in fwd_primer_columns:
             ind, pos = row[fwd_column]
-            primer = import_primer_fwd(ind)
-            primer_pos = Seq(row['seq']).find(primer)
-            if primer_pos == -1:
-                warnings.resetwarnings()
-                warnings.warn("Primer {} is not in sequence {} as expected.".format(ind, index))
-                no_warnings = False
-            elif pos != primer_pos:
-                warnings.resetwarnings()
-                warnings.warn("Primer {} is not at the right position in sequence {}. Found at position {}, supposed to be at {}.".format(ind, index, primer_pos, pos))
-                no_warnings = False
+            if not ((ind == None) or (pos == None)):
+                primer = import_primer_fwd(ind)
+                primer_pos = Seq(row['seq'].upper()).find(primer)
+                if primer_pos == -1:
+                    warnings.resetwarnings()
+                    warnings.warn("Primer {} is not in sequence {} as expected.".format(ind, index))
+                    no_warnings = False
+                elif pos != primer_pos:
+                    warnings.resetwarnings()
+                    warnings.warn("Primer {} is not at the right position in sequence {}. Found at position {}, supposed to be at {}.".format(ind, index, primer_pos, pos))
+                    no_warnings = False
 
         for rev_column in rev_primer_columns:
             ind, pos = row[rev_column]
-            primer = import_primer_rev(ind)
-            primer_pos = Seq(row['seq']).find(primer)
-            if primer_pos == -1:
-                warnings.resetwarnings()
-                warnings.warn("Primer {} is not in sequence {} as expected.".format(ind, index))
-                no_warnings = False
-            elif pos != primer_pos:
-                warnings.resetwarnings()
-                warnings.warn("Primer {} is not at the right position in sequence {}. Found at position {}, supposed to be at {}.".format(ind, index, primer_pos, pos))
-                no_warnings = False
+            if not ((ind == None) or (pos == None)):
+                primer = complement_seq(import_primer_rev(ind), rev=True)
+                primer_pos = Seq(row['seq'].upper()).find(primer)
+                if primer_pos == -1:
+                    warnings.resetwarnings()
+                    warnings.warn("Primer {} is not in sequence {} as expected.".format(ind, index))
+                    no_warnings = False
+                elif pos != primer_pos:
+                    warnings.resetwarnings()
+                    warnings.warn("Primer {} is not at the right position in sequence {}. Found at position {}, supposed to be at {}.".format(ind, index, primer_pos, pos))
+                    no_warnings = False
 
-        return no_warnings
+    return no_warnings
 
 
 

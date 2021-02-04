@@ -15,7 +15,7 @@ from Bio.Restriction import *
 from Bio.Seq import Seq
 from Bio.SeqIO import parse
 
-from .utils import isint, choose_dict, import_primer_fwd, import_primer_rev,_check_sequence_list
+from .utils import isint, choose_dict, import_primer_fwd, import_primer_rev,_check_sequence_list,complement_seq
 from .quality_control import scan_enzymes
 import warnings
 
@@ -533,14 +533,14 @@ def scramble_site(
         minus_10_start = int(minus_10_start)
         minus_10_end = int(minus_10_end)
         
-        scramble_seq = scramble_seq[0:minus_10_start] + wt_seq[minus_10_start:minus_10_end] + scramble_seq[minus_10_end:len(scramble)]
+        scramble_seq = scramble_seq[0:minus_10_start] + wt_seq[minus_10_start:minus_10_end] + scramble_seq[minus_10_end:len(scramble_seq)]
     
     if minus_35:
         
         minus_35_start = int(minus_35_start)
         minus_35_end = int(minus_35_end)
         
-        scramble_seq = scramble_seq[0:minus_35_start] + wt_seq[minus_35_start:minus_35_end] + scramble_seq[minus_35_end:len(scramble)]
+        scramble_seq = scramble_seq[0:minus_35_start] + wt_seq[minus_35_start:minus_35_end] + scramble_seq[minus_35_end:len(scramble_seq)]
     
     return scramble_seq    
 
@@ -873,7 +873,7 @@ def add_primers(sequence_list, primer_index, autocomplete=False, len_to_complete
         
     # Import primers
     forward = import_primer_fwd(primer_index)
-    reverse = import_primer_rev(primer_index)
+    reverse = complement_seq(import_primer_rev(primer_index), rev=True)
     
     # Copy sequence_list to not override input
     new_seq_list = copy.deepcopy(sequence_list)
